@@ -8,6 +8,7 @@
 #include "incidence_matrix.h"
 #include "primVertex.h"
 #include "dijkstraVertex.h"
+#include "Sort.h"
 #include <vector>
 #include <queue>
 #include <climits>
@@ -487,9 +488,19 @@ void incidence_matrix::printPrim() {
         return;
     }
 
-    std::vector<int> parent(numVertices, -1); // Array to store constructed MST
-    std::vector<int> key(numVertices, INT_MAX); // Key values used to pick the minimum weight edge
-    std::vector<bool> mstSet(numVertices, false); // To represent set of vertices included in MST
+    int *parent = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        parent[i] = -1;
+    }
+
+    int* key = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        key[i] =INT_MAX;
+    }
+    bool* mstSet = new bool[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        mstSet[i] = false;
+    }
 
     std::priority_queue<primVertex, std::vector<primVertex>, std::greater<primVertex>> pq; // Priority queue to store vertices and their weights
 
@@ -533,6 +544,9 @@ void incidence_matrix::printPrim() {
         int u = parent[i];
         std::cout << u << " - " << i << "\t" << key[i] << std::endl;
     }
+    delete[] mstSet;
+    delete[] key;
+    delete[] parent;
 }
 
 void incidence_matrix::dijkstra(int source, int end) {
@@ -546,9 +560,19 @@ void incidence_matrix::dijkstra(int source, int end) {
         return;
     }
 
-    std::vector<int> dist(numVertices, INT_MAX); // Array to store the shortest distances from the source
-    std::vector<bool> visited(numVertices, false); // Array to track visited vertices
-    std::vector<int> parent(numVertices, -1);
+    int *parent = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        parent[i] = -1;
+    }
+
+    int* dist = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        dist[i] =INT_MAX;
+    }
+    bool* visited = new bool[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        visited[i] = false;
+    }
 
 
     std::priority_queue<dijkstraVertex, std::vector<dijkstraVertex>, std::greater<dijkstraVertex>> pq; // Priority queue to store vertices and their distances
@@ -591,6 +615,9 @@ void incidence_matrix::dijkstra(int source, int end) {
             }
         }
     }
+    delete[] dist;
+    delete[] parent;
+    delete[] visited;
 
 }
 
@@ -607,9 +634,19 @@ void incidence_matrix::printDijkstra(int source, int end) {
         std::cout << "Path: " << std::endl;
         return;
     }
-    std::vector<int> distance(numVertices, INT_MAX); // Array to store the shortest distances from the source
-    std::vector<bool> visited(numVertices, false); // Array to track visited vertices
-    std::vector<int> parent(numVertices, -1);
+    int *parent = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        parent[i] = -1;
+    }
+
+    int* distance = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        distance[i] =INT_MAX;
+    }
+    bool* visited = new bool[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        visited[i] = false;
+    }
 
 
     std::priority_queue<dijkstraVertex, std::vector<dijkstraVertex>, std::greater<dijkstraVertex>> pq; // Priority queue to store vertices and their distances
@@ -670,7 +707,9 @@ void incidence_matrix::printDijkstra(int source, int end) {
         }
         std::cout << std::endl;
     }
-
+    delete[] distance;
+    delete[] parent;
+    delete[] visited;
 }
 
 void incidence_matrix::printKruskal() {
@@ -684,10 +723,10 @@ void incidence_matrix::printKruskal() {
 
 
 
-    int v = 0,u = 0;
+    int v = 0,u = 0, edge = 0;
 
     // Create a vector of edges
-    std::vector<kruskal_edge> edges;
+    kruskal_edge** edges = new kruskal_edge * [numEdges];
 
     for (int e = 0; e < numEdges; e++) {
         v = -1;
@@ -698,7 +737,8 @@ void incidence_matrix::printKruskal() {
                     v = i;
                 }else{
                     u = i;
-                    edges.push_back(kruskal_edge(v, u, weights[e]));
+                    edges[edge] = new kruskal_edge(v, u, weights[e]);
+                    edge++;
                     break;
                 }
             }
@@ -707,7 +747,8 @@ void incidence_matrix::printKruskal() {
 
 
     // Sort the edges in non-decreasing order of weights
-    std::sort(edges.begin(), edges.end(), compareEdges);
+    Sort* sort = new Sort();
+    sort->quickSortEdges(edges,0,numEdges);
 
     std::vector<Subset> subsets(numVertices); // Array to store subsets for union-find
 
@@ -716,18 +757,19 @@ void incidence_matrix::printKruskal() {
         subsets[v].rank = 0;
     }
 
-    std::vector<kruskal_edge> mst; // Minimum spanning tree
+    kruskal_edge** mst = new kruskal_edge * [numVertices-1];
+
     int edgeCount = 0; // Count of edges included in the MST
 
-    for (const kruskal_edge& edge : edges) {
-        int u = edge.u;
-        int v = edge.v;
+    for (int i = 0; i< numEdges;i++) {
+        int u = edges[i]->u;
+        int v = edges[i]->v;
 
         int uParent = findSet(subsets, u);
         int vParent = findSet(subsets, v);
 
         if (uParent != vParent) {
-            mst.push_back(edge);
+            mst[edgeCount] = edges[i];
             unionSets(subsets, uParent, vParent);
             edgeCount++;
         }
@@ -738,8 +780,8 @@ void incidence_matrix::printKruskal() {
     }
     std::cout << "Minimum Spanning Tree:\n";
     std::cout << "Edge\tWeight\n";
-    for (const kruskal_edge& edge : mst) {
-        std::cout << edge.u << " - " << edge.v << " \t " << edge.weight << "\n";
+    for (int i = 0; i<numVertices-1; i++) {
+        std::cout << mst[i]->u << " - " << mst[i]->v << " \t " << mst[i]->weight << "\n";
     }
 }
 
