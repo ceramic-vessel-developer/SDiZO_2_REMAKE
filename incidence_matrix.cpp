@@ -388,10 +388,10 @@ void incidence_matrix::kruskal() {
     }
 
 
-    int v = 0,u = 0;
+    int v = 0,u = 0, edge = 0;
 
 
-    std::vector<kruskal_edge> edges;
+    kruskal_edge** edges = new kruskal_edge * [numEdges];
 
     for (int e = 0; e < numEdges; e++) {
         v = -1;
@@ -402,7 +402,8 @@ void incidence_matrix::kruskal() {
                     v = i;
                 }else{
                     u = i;
-                    edges.push_back(kruskal_edge(v, u, weights[e]));
+                    edges[edge] = new kruskal_edge(v, u, weights[e]);
+                    edge++;
                     break;
                 }
             }
@@ -411,33 +412,36 @@ void incidence_matrix::kruskal() {
 
 
 
-    std::sort(edges.begin(), edges.end(), compareEdges);
+    Sort::quickSortEdges(edges,0,numEdges-1);
 
-    std::vector<Subset> subsets(numVertices);
+//    std::vector<Subset> subsets(numVertices);// Array to store subsets for union-find
+    Subset** subsets = new Subset * [numVertices];
+
 
     for (int v = 0; v < numVertices; v++) {
-        subsets[v].parent = v;
-        subsets[v].rank = 0;
+        subsets[v] = new Subset();
+        subsets[v]->parent = v;
+        subsets[v]->rank = 0;
     }
 
-    std::vector<kruskal_edge> mst;
+    kruskal_edge** mst = new kruskal_edge * [numVertices-1];
     int edgeCount = 0;
 
-    for (const kruskal_edge& edge : edges) {
-        int u = edge.u;
-        int v = edge.v;
+    for (int i = 0; i< numEdges;i++) {
+        int u = edges[i]->u;
+        int v = edges[i]->v;
 
         int uParent = findSet(subsets, u);
         int vParent = findSet(subsets, v);
 
         if (uParent != vParent) {
-            mst.push_back(edge);
+            mst[edgeCount] = edges[i];
             unionSets(subsets, uParent, vParent);
             edgeCount++;
         }
 
         if (edgeCount == numVertices - 1) {
-            break;
+            break; // MST is complete
         }
     }
 }
@@ -453,9 +457,15 @@ void incidence_matrix::bellman_ford(int source, int end) {
         return;
     }
 
-    std::vector<int> distance(numVertices, INT_MAX);
-    std::vector<int> predecessor(numVertices, -1);
-    int u,v,w;
+    int* distance = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        distance[i] = INT_MAX;
+    }
+    int* parent = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        parent[i] = -1;
+    }
+    int u = 0,v = 0,w;
 
     // Initialize distance array
     distance[source] = 0;
@@ -463,20 +473,26 @@ void incidence_matrix::bellman_ford(int source, int end) {
     // Relax edges repeatedly |V|-1 times
     for (int i = 0; i < numVertices - 1; ++i) {
         for (int j = 0; j< numEdges;j++) {
+            u = 0;
+            v = 0 ;
             for (int k = 0; k < numVertices; ++k) {
                 if (matrix[j][k] == 1){
                     u = k;
                 } else if (matrix[j][k] == -1){
                     v = k;
                 }
+                if (u != 0 && v != 0) break;
+
             }
             w = weights[j];
             if (distance[u] != INT_MAX && distance[u] + w < distance[v]) {
                 distance[v] = distance[u] + w;
-                predecessor[v] = u;
+                parent[v] = u;
             }
         }
     }
+    delete[] parent;
+    delete[] distance;
 }
 
 void incidence_matrix::printPrim() {
@@ -721,8 +737,6 @@ void incidence_matrix::printKruskal() {
         return;
     }
 
-
-
     int v = 0,u = 0, edge = 0;
 
     // Create a vector of edges
@@ -747,14 +761,17 @@ void incidence_matrix::printKruskal() {
 
 
     // Sort the edges in non-decreasing order of weights
-    Sort* sort = new Sort();
-    sort->quickSortEdges(edges,0,numEdges);
 
-    std::vector<Subset> subsets(numVertices); // Array to store subsets for union-find
+    Sort::quickSortEdges(edges,0,numEdges-1);
+
+//    std::vector<Subset> subsets(numVertices);// Array to store subsets for union-find
+    Subset** subsets = new Subset * [numVertices];
+
 
     for (int v = 0; v < numVertices; v++) {
-        subsets[v].parent = v;
-        subsets[v].rank = 0;
+        subsets[v] = new Subset();
+        subsets[v]->parent = v;
+        subsets[v]->rank = 0;
     }
 
     kruskal_edge** mst = new kruskal_edge * [numVertices-1];
@@ -785,24 +802,24 @@ void incidence_matrix::printKruskal() {
     }
 }
 
-int incidence_matrix::findSet(std::vector<Subset> &subsets, int i) {
-    if (subsets[i].parent != i) {
-        subsets[i].parent = findSet(subsets, subsets[i].parent);
+int incidence_matrix::findSet(Subset **subsets, int i) {
+    if (subsets[i]->parent != i) {
+        subsets[i]->parent = findSet(subsets, subsets[i]->parent);
     }
-    return subsets[i].parent;
+    return subsets[i]->parent;
 }
 
-void incidence_matrix::unionSets(std::vector<Subset> &subsets, int x, int y) {
+void incidence_matrix::unionSets(Subset **subsets, int x, int y) {
     int xRoot = findSet(subsets, x);
     int yRoot = findSet(subsets, y);
 
-    if (subsets[xRoot].rank < subsets[yRoot].rank) {
-        subsets[xRoot].parent = yRoot;
-    } else if (subsets[xRoot].rank > subsets[yRoot].rank) {
-        subsets[yRoot].parent = xRoot;
+    if (subsets[xRoot]->rank < subsets[yRoot]->rank) {
+        subsets[xRoot]->parent = yRoot;
+    } else if (subsets[xRoot]->rank > subsets[yRoot]->rank) {
+        subsets[yRoot]->parent = xRoot;
     } else {
-        subsets[yRoot].parent = xRoot;
-        subsets[xRoot].rank++;
+        subsets[yRoot]->parent = xRoot;
+        subsets[xRoot]->rank++;
     }
 }
 
@@ -823,10 +840,15 @@ void incidence_matrix::print_bellman_ford(int source, int end) {
         std::cout << "Path: " << std::endl;
         return;
     }
-
-    std::vector<int> distance(numVertices, INT_MAX);
-    std::vector<int> parent(numVertices, -1);
-    int u,v,w;
+    int* distance = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        distance[i] = INT_MAX;
+    }
+    int* parent = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        parent[i] = -1;
+    }
+    int u = 0,v = 0,w;
 
     // Initialize distance array
     distance[source] = 0;
@@ -834,12 +856,15 @@ void incidence_matrix::print_bellman_ford(int source, int end) {
     // Relax edges repeatedly |V|-1 times
     for (int i = 0; i < numVertices - 1; ++i) {
         for (int j = 0; j< numEdges;j++) {
+            u = 0;
+            v = 0 ;
             for (int k = 0; k < numVertices; ++k) {
                 if (matrix[j][k] == 1){
                     u = k;
                 } else if (matrix[j][k] == -1){
                     v = k;
                 }
+                if (u != 0 && v != 0) break;
             }
             w = weights[j];
             if (distance[u] != INT_MAX && distance[u] + w < distance[v]) {
@@ -867,6 +892,8 @@ void incidence_matrix::print_bellman_ford(int source, int end) {
         }
         std::cout << std::endl;
     }
+    delete[] parent;
+    delete[] distance;
 }
 
 void incidence_matrix::setNumEdges(int numEdges) {

@@ -30,7 +30,7 @@ void Sort::quickSortEdges(kruskal_edge **arr, int low, int high) {
 }
 
 void Sort::swapEdges(kruskal_edge** a, kruskal_edge** b) {
-    kruskal_edge** temp = a;
-    a = b;
-    b = temp;
+    kruskal_edge* temp = *a;
+    *a = *b;
+    *b = temp;
 }

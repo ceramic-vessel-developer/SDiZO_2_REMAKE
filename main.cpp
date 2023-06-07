@@ -19,36 +19,36 @@ void bellman();
 int main() {
     int choice;
     bool error = true;
-    kruskal_edge** test = new kruskal_edge * [3];
-    test[0] = new kruskal_edge(0,1,15);
-    test[1] = new kruskal_edge(1,2,1);
-    test[2] = new kruskal_edge(2,3,4);
-    Sort::quickSortEdges(test,0,2);
-    for (int i = 0; i < 3; ++i) {
-        std::cout<< test[i]->weight << std::endl;
-    }
-
-//    while (error) {
-//        std::cout << "Wybierz funkcjonalnosc programu:\n1)Badania\n2)Testowanie funkcjonalnosci" << std::endl;
-//
-//        std::cin >> choice;
-//        std::cout << std::endl;
-//
-//        switch (choice) {
-//            case 1:
-//                research();
-//                error = false;
-//                break;
-//            case 2:
-//                test();
-//                error = false;
-//                break;
-//            default:
-//                std::cout << "Bledna wartosc" << std::endl;
-//                break;
-//
-//        }
+//    kruskal_edge** test = new kruskal_edge * [3];
+//    test[0] = new kruskal_edge(0,1,15);
+//    test[1] = new kruskal_edge(1,2,1);
+//    test[2] = new kruskal_edge(2,3,4);
+//    Sort::quickSortEdges(test,0,2);
+//    for (int i = 0; i < 3; ++i) {
+//        std::cout<< test[i]->weight << std::endl;
 //    }
+
+    while (error) {
+        std::cout << "Wybierz funkcjonalnosc programu:\n1)Badania\n2)Testowanie funkcjonalnosci" << std::endl;
+
+        std::cin >> choice;
+        std::cout << std::endl;
+
+        switch (choice) {
+            case 1:
+                research();
+                error = false;
+                break;
+            case 2:
+                test();
+                error = false;
+                break;
+            default:
+                std::cout << "Bledna wartosc" << std::endl;
+                break;
+
+        }
+    }
     return 0;
 }
 
