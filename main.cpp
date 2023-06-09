@@ -6,6 +6,7 @@
 #include "adjacency_list.h"
 #include "Menu_helper.h"
 #include "Sort.h"
+#include "DijkstraHeap.h"
 
 void test();
 void research();
@@ -19,15 +20,18 @@ void bellman();
 int main() {
     int choice;
     bool error = true;
-//    kruskal_edge** test = new kruskal_edge * [3];
-//    test[0] = new kruskal_edge(0,1,15);
-//    test[1] = new kruskal_edge(1,2,1);
-//    test[2] = new kruskal_edge(2,3,4);
-//    Sort::quickSortEdges(test,0,2);
-//    for (int i = 0; i < 3; ++i) {
-//        std::cout<< test[i]->weight << std::endl;
+//    DijkstraHeap* test = new DijkstraHeap(5);
+//    test->dijkstraVertices[3]->distance = 4;
+//    test->dijkstraVertices[1]->distance = 15;
+//    test->create_heap();
+//
+//    for (int i = 0; i < 5; ++i) {
+//        test->create_heap();
+//        auto elem = test->pop_min();
+//        std::cout << elem->index << ' ' << elem->distance << std::endl;
+//        test->dijkstraVertices[test->position[4]]->distance = 4;
+//        test->dijkstraVertices[test->position[2]]->distance = 2;
 //    }
-
     while (error) {
         std::cout << "Wybierz funkcjonalnosc programu:\n1)Badania\n2)Testowanie funkcjonalnosci" << std::endl;
 
@@ -215,10 +219,10 @@ void path(){
 }
 
 void research(){
-//    prim();
+    prim();
 //    kruskal();
     dijkstra();
-//    bellman();
+    bellman();
 
 }
 
@@ -302,22 +306,22 @@ void kruskal(){
         for (int j = 0; j < 4; ++j) {
             size = sizes[i];
             density = densities[j];
-            for (int k = 0; k < number_of_tests; ++k) {
-                std::cout<< "KRUSKAL LIST " << i << ' '<< j <<' '<< k << std::endl;
-                list = new adjacency_list(size,density,false);
-                list->generate_graph(size);
-
-                QueryPerformanceCounter(&start_time);
-                list->kruskal();
-                QueryPerformanceCounter(&end_time);
-
-                elapsed_time.QuadPart = end_time.QuadPart - start_time.QuadPart;
-                elapsed_time_double = static_cast<long double>(elapsed_time.QuadPart);
-                elapsed_time_double *= 1000000; // result in microseconds
-                elapsed_time_double /= frequency.QuadPart;
-                delete list;
-                times[0] += elapsed_time_double;
-            }
+//            for (int k = 0; k < number_of_tests; ++k) {
+//                std::cout<< "KRUSKAL LIST " << i << ' '<< j <<' '<< k << std::endl;
+//                list = new adjacency_list(size,density,false);
+//                list->generate_graph(size);
+//
+//                QueryPerformanceCounter(&start_time);
+//                list->kruskal();
+//                QueryPerformanceCounter(&end_time);
+//
+//                elapsed_time.QuadPart = end_time.QuadPart - start_time.QuadPart;
+//                elapsed_time_double = static_cast<long double>(elapsed_time.QuadPart);
+//                elapsed_time_double *= 1000000; // result in microseconds
+//                elapsed_time_double /= frequency.QuadPart;
+//                delete list;
+//                times[0] += elapsed_time_double;
+//            }
             for (int k = 0; k < number_of_tests; ++k) {
                 matrix = new incidence_matrix(size,density,false);
                 std::cout<< "KRUSKAL MATRIX " << i << ' '<< j <<' '<< k << std::endl;

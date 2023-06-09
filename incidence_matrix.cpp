@@ -9,6 +9,9 @@
 #include "primVertex.h"
 #include "dijkstraVertex.h"
 #include "Sort.h"
+#include "DijkstraHeap.h"
+#include "primHeap.h"
+#include "double_linked_list_int.h"
 #include <vector>
 #include <queue>
 #include <climits>
@@ -339,20 +342,29 @@ void incidence_matrix::prim() {
 
 
 
-    std::vector<int> parent(numVertices, -1); // Array to store constructed MST
-    std::vector<int> key(numVertices, INT_MAX); // Key values used to pick the minimum weight edge
-    std::vector<bool> mstSet(numVertices, false); // To represent set of vertices included in MST
+    int *parent = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        parent[i] = -1;
+    }
 
-    std::priority_queue<primVertex, std::vector<primVertex>, std::greater<primVertex>> pq; // Priority queue to store vertices and their weights
-
+    int* key = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        key[i] =INT_MAX;
+    }
+    bool* mstSet = new bool[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        mstSet[i] = false;
+    }
+    primHeap* pq = new primHeap(numVertices);
     // Start with vertex 0
-    pq.push(primVertex(0,0)); // Vertex 0 has key 0
+    pq->primVertices[0]->key = 0;
     key[0] = 0;
 
     // Loop until all vertices are included in MST
-    while (!pq.empty()) {
-        int u = pq.top().vertex; // Extract the vertex with minimum key value
-        pq.pop();
+    while (pq->is_not_empty()) {
+        pq->create_heap();
+        auto elem = pq->pop();
+        int u = elem->vertex;
 
         if (mstSet[u]) continue;
 
@@ -374,10 +386,14 @@ void incidence_matrix::prim() {
             if (v != -1 && !mstSet[v] && weights[e] < key[v]) {
                 key[v] = weights[e];
                 parent[v] = u;
-                pq.push(primVertex(key[v],v));
+                pq->primVertices[pq->position[v]]->key = weights[e];
             }
         }
     }
+    delete[] mstSet;
+    delete[] key;
+    delete[] parent;
+    delete pq;
 }
 
 void incidence_matrix::kruskal() {
@@ -444,6 +460,9 @@ void incidence_matrix::kruskal() {
             break; // MST is complete
         }
     }
+    delete [] subsets;
+    delete[] edges;
+
 }
 
 void incidence_matrix::bellman_ford(int source, int end) {
@@ -518,16 +537,17 @@ void incidence_matrix::printPrim() {
         mstSet[i] = false;
     }
 
-    std::priority_queue<primVertex, std::vector<primVertex>, std::greater<primVertex>> pq; // Priority queue to store vertices and their weights
-
+    primHeap* pq = new primHeap(numVertices);
     // Start with vertex 0
-    pq.push(primVertex(0,0)); // Vertex 0 has key 0
+    pq->primVertices[0]->key = 0;
     key[0] = 0;
 
     // Loop until all vertices are included in MST
-    while (!pq.empty()) {
-        int u = pq.top().vertex; // Extract the vertex with minimum key value
-        pq.pop();
+    while (pq->is_not_empty()) {
+        pq->create_heap();
+        auto elem = pq->pop();
+        int u = elem->vertex;
+
 
         if (mstSet[u]) continue;
 
@@ -549,7 +569,7 @@ void incidence_matrix::printPrim() {
             if (v != -1 && !mstSet[v] && weights[e] < key[v]) {
                 key[v] = weights[e];
                 parent[v] = u;
-                pq.push(primVertex(key[v],v));
+                pq->primVertices[pq->position[v]]->key = weights[e];
             }
         }
     }
@@ -563,6 +583,7 @@ void incidence_matrix::printPrim() {
     delete[] mstSet;
     delete[] key;
     delete[] parent;
+    delete pq;
 }
 
 void incidence_matrix::dijkstra(int source, int end) {
@@ -591,15 +612,16 @@ void incidence_matrix::dijkstra(int source, int end) {
     }
 
 
-    std::priority_queue<dijkstraVertex, std::vector<dijkstraVertex>, std::greater<dijkstraVertex>> pq; // Priority queue to store vertices and their distances
+    DijkstraHeap* pq = new DijkstraHeap(numVertices); // Priority queue to store vertices and their distances
 
     dist[source] = 0; // Distance from source to itself is 0
-    pq.push(dijkstraVertex(source, dist[source], -1)); // Push the source vertex into the priority queue
+    pq->dijkstraVertices[source]->distance = dist[source];
+    pq->dijkstraVertices[source]->parent = -1;
 
-    while (!pq.empty()) {
-        int u = pq.top().index;
-        // Extract the vertex with minimum distance
-        pq.pop();
+    while (pq->is_not_empty()) {
+        pq->create_heap();
+        auto elem = pq->pop_min();
+        int u = elem->index;
 
         if (visited[u]) {
             continue; // Skip if the vertex is already visited
@@ -624,7 +646,8 @@ void incidence_matrix::dijkstra(int source, int end) {
 
                     if (!visited[v] && dist[u] != INT_MAX && dist[u] + weight < dist[v]) {
                         dist[v] = dist[u] + weight; // Update the distance
-                        pq.push(dijkstraVertex(v, dist[v],u)); // Push the updated distance into the priority queue
+                        pq->dijkstraVertices[v]->distance = dist[v];
+                        pq->dijkstraVertices[v]->parent = u;
                         parent[v] = u;
                     }
                 }
@@ -634,6 +657,7 @@ void incidence_matrix::dijkstra(int source, int end) {
     delete[] dist;
     delete[] parent;
     delete[] visited;
+    delete pq;
 
 }
 
@@ -655,9 +679,9 @@ void incidence_matrix::printDijkstra(int source, int end) {
         parent[i] = -1;
     }
 
-    int* distance = new int[numVertices];
+    int* dist = new int[numVertices];
     for (int i = 0; i < numVertices; ++i) {
-        distance[i] =INT_MAX;
+        dist[i] =INT_MAX;
     }
     bool* visited = new bool[numVertices];
     for (int i = 0; i < numVertices; ++i) {
@@ -665,15 +689,16 @@ void incidence_matrix::printDijkstra(int source, int end) {
     }
 
 
-    std::priority_queue<dijkstraVertex, std::vector<dijkstraVertex>, std::greater<dijkstraVertex>> pq; // Priority queue to store vertices and their distances
+    DijkstraHeap* pq = new DijkstraHeap(numVertices); // Priority queue to store vertices and their distances
 
-    distance[source] = 0; // Distance from source to itself is 0
-    pq.push(dijkstraVertex(source, distance[source], -1)); // Push the source vertex into the priority queue
+    dist[source] = 0; // Distance from source to itself is 0
+    pq->dijkstraVertices[source]->distance = dist[source];
+    pq->dijkstraVertices[source]->parent = -1;
 
-    while (!pq.empty()) {
-        int u = pq.top().index;
-        // Extract the vertex with minimum distance
-        pq.pop();
+    while (pq->is_not_empty()) {
+        pq->create_heap();
+        auto elem = pq->pop_min();
+        int u = elem->index;
 
         if (visited[u]) {
             continue; // Skip if the vertex is already visited
@@ -696,9 +721,10 @@ void incidence_matrix::printDijkstra(int source, int end) {
                 if (v != -1) {
                     int weight = weights[e];
 
-                    if (!visited[v] && distance[u] != INT_MAX && distance[u] + weight < distance[v]) {
-                        distance[v] = distance[u] + weight; // Update the distance
-                        pq.push(dijkstraVertex(v, distance[v], u)); // Push the updated distance into the priority queue
+                    if (!visited[v] && dist[u] != INT_MAX && dist[u] + weight < dist[v]) {
+                        dist[v] = dist[u] + weight; // Update the distance
+                        pq->dijkstraVertices[pq->position[v]]->distance = dist[v];
+                        pq->dijkstraVertices[pq->position[v]]->parent = u;
                         parent[v] = u;
                     }
                 }
@@ -706,26 +732,27 @@ void incidence_matrix::printDijkstra(int source, int end) {
         }
     }
     std::cout << "Shortest path from source to vertex " << end << ":" << std::endl;
-    if (distance[end] == INT_MAX) {
+    if (dist[end] == INT_MAX) {
         std::cout << "No path exists." << std::endl;
     } else {
-        std::cout << "Distance: " << distance[end] << std::endl;
+        std::cout << "Distance: " << dist[end] << std::endl;
         std::cout << "Path: ";
-        std::stack<int> path;
+        double_linked_list_int* path = new double_linked_list_int(0);
         int current = end;
+        int path_length = 0;
         while (current != -1) {
-            path.push(current);
+            path->add_back(current);
             current = parent[current];
         }
-        while (!path.empty()) {
-            std::cout << path.top() << " ";
-            path.pop();
+        while (path->is_not_empty()) {
+            std::cout << path->pop_back() << " ";
         }
         std::cout << std::endl;
     }
-    delete[] distance;
+    delete[] dist;
     delete[] parent;
     delete[] visited;
+    delete pq;
 }
 
 void incidence_matrix::printKruskal() {
@@ -800,6 +827,8 @@ void incidence_matrix::printKruskal() {
     for (int i = 0; i<numVertices-1; i++) {
         std::cout << mst[i]->u << " - " << mst[i]->v << " \t " << mst[i]->weight << "\n";
     }
+    delete [] subsets;
+    delete[] edges;
 }
 
 int incidence_matrix::findSet(Subset **subsets, int i) {
@@ -880,20 +909,21 @@ void incidence_matrix::print_bellman_ford(int source, int end) {
     } else {
         std::cout << "Distance: " << distance[end] << std::endl;
         std::cout << "Path: ";
-        std::stack<int> path;
+        double_linked_list_int* path = new double_linked_list_int(0);
         int current = end;
         while (current != -1) {
-            path.push(current);
+            path->add_back(current);
             current = parent[current];
         }
-        while (!path.empty()) {
-            std::cout << path.top() << " ";
-            path.pop();
+        while (path->is_not_empty()) {
+            std::cout << path->pop_back()<< " ";
         }
         std::cout << std::endl;
+        delete path;
     }
     delete[] parent;
     delete[] distance;
+
 }
 
 void incidence_matrix::setNumEdges(int numEdges) {

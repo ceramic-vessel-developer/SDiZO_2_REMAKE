@@ -47,8 +47,8 @@ public:
     void printKruskal();
     void print_bellman_ford(int source, int end);
 
-    void unionSets(std::vector<Subset>& subsets, int x, int y);
-    int findSet(std::vector<Subset>& subsets, int i);
+    void unionSets(Subset **subsets, int x, int y);
+    int findSet(Subset **subsets, int i);
     static bool compareEdges(const kruskal_edge& a, const kruskal_edge& b);
 
     void generate_graph(int vertices);

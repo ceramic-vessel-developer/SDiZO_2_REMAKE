@@ -11,6 +11,10 @@
 #include "adjacency_list.h"
 #include "primVertex.h"
 #include "dijkstraVertex.h"
+#include "primHeap.h"
+#include "Sort.h"
+#include "DijkstraHeap.h"
+#include "double_linked_list_int.h"
 
 adjacency_list::adjacency_list(int vertices, int density, bool directed) {
     if (vertices<0) vertices = 0;
@@ -149,23 +153,29 @@ void adjacency_list::prim() {
         return;
     }
 
+    int *parent = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        parent[i] = -1;
+    }
 
-    std::vector<int> parent(numVertices, -1); // Array to store constructed MST
-    std::vector<int> key(numVertices, INT_MAX); // Key values used to pick the minimum weight edge
-    std::vector<bool> mstSet(numVertices, false); // To represent set of vertices included in MST
-
-
-
-    std::priority_queue<primVertex, std::vector<primVertex>, std::greater<primVertex>> pq; // Priority queue to store vertices and their weights
-
+    int* key = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        key[i] =INT_MAX;
+    }
+    bool* mstSet = new bool[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        mstSet[i] = false;
+    }
+    primHeap* pq = new primHeap(numVertices);
     // Start with vertex 0
-    pq.push(primVertex(0, 0)); // Vertex 0 has key 0
+    pq->primVertices[0]->key = 0;
     key[0] = 0;
 
     // Loop until all vertices are included in MST
-    while (!pq.empty()) {
-        int u = pq.top().vertex; // Extract the vertex with minimum key value
-        pq.pop();
+    while (pq->is_not_empty()) {
+        pq->create_heap();
+        auto elem = pq->pop();
+        int u = elem->vertex;
 
         mstSet[u] = true; // Add the extracted vertex to the MST set
         auto list = adjacency_lists[u]->get_head();
@@ -176,7 +186,7 @@ void adjacency_list::prim() {
             if (!mstSet[v] && weight < key[v]) {
                 key[v] = weight;
                 parent[v] = u;
-                pq.push(primVertex(key[v], v));
+                pq->primVertices[pq->position[v]]->key = weight;
             }
             list = list->next;
         }
@@ -190,40 +200,43 @@ void adjacency_list::kruskal() {
         return;
     }
 
-
-    std::vector<kruskal_edge> edges;
+    int edge = 0;
+    kruskal_edge** edges = new kruskal_edge * [numEdges];
     for (int u = 0; u < numVertices; u++) {
         auto elem = adjacency_lists[u]->get_head();
         while(elem) {
             int v = elem->value.neighbour;
             int weight = elem->value.weight;
-            edges.push_back(kruskal_edge(u, v, weight));
+            edges[edge] = new kruskal_edge(v,u, weight);
+            edge++;
             elem = elem->next;
         }
     }
 
     // Sort the edges in non-decreasing order of weights
-    std::sort(edges.begin(), edges.end(), compareEdges);
 
-    std::vector<Subset> subsets(numVertices); // Array to store subsets for union-find
+    Sort::quickSortEdges(edges,0,numEdges-1);
+
+    Subset** subsets = new Subset * [numVertices];
 
     for (int v = 0; v <numVertices; v++) {
-        subsets[v].parent = v;
-        subsets[v].rank = 0;
+        subsets[v] = new Subset();
+        subsets[v]->parent = v;
+        subsets[v]->rank = 0;
     }
 
-    std::vector<kruskal_edge> mst; // Minimum spanning tree
-    int edgeCount = 0; // Count of edges included in the MST
+    kruskal_edge** mst = new kruskal_edge * [numVertices-1];
+    int edgeCount = 0;
 
-    for (const kruskal_edge& edge : edges) {
-        int u = edge.u;
-        int v = edge.v;
+    for (int i = 0; i< numEdges;i++) {
+        int u = edges[i]->u;
+        int v = edges[i]->v;
 
         int uParent = findSet(subsets, u);
         int vParent = findSet(subsets, v);
 
         if (uParent != vParent) {
-            mst.push_back(edge);
+            mst[edgeCount] = edges[i];
             unionSets(subsets, uParent, vParent);
             edgeCount++;
         }
@@ -232,6 +245,8 @@ void adjacency_list::kruskal() {
             break; // MST is complete
         }
     }
+    delete [] subsets;
+
 }
 
 void adjacency_list::dijkstra(int source, int end) {
@@ -245,20 +260,31 @@ void adjacency_list::dijkstra(int source, int end) {
         return;
     }
 
-    std::vector<int> distance(numVertices, INT_MAX); // Array to store the shortest distances from the source
-    std::vector<bool> visited(numVertices, false); // Array to track visited vertices
-    std::vector<int> parent(numVertices, -1);
+    int *parent = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        parent[i] = -1;
+    }
+
+    int* distance = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        distance[i] =INT_MAX;
+    }
+    bool* visited = new bool[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        visited[i] = false;
+    }
 
 
-    std::priority_queue<dijkstraVertex, std::vector<dijkstraVertex>, std::greater<dijkstraVertex>> pq; // Priority queue to store vertices and their distances
+    DijkstraHeap* pq = new DijkstraHeap(numVertices); // Priority queue to store vertices and their distances
 
     distance[source] = 0; // Distance from source to itself is 0
-    pq.push(dijkstraVertex(source, distance[source], -1)); // Push the source vertex into the priority queue
+    pq->dijkstraVertices[source]->distance = distance[source];
+    pq->dijkstraVertices[source]->parent = -1;
 
-    while (!pq.empty()) {
-        int u = pq.top().index; // Extract the vertex with minimum distance
-
-        pq.pop();
+    while (pq->is_not_empty()) {
+        pq->create_heap();
+        auto vertex = pq->pop_min();
+        int u = vertex->index;
 
         if (visited[u]) {
             continue; // Skip if the vertex is already visited
@@ -273,7 +299,8 @@ void adjacency_list::dijkstra(int source, int end) {
 
             if (!visited[v] && distance[u] != INT_MAX && distance[u] + weight < distance[v]) {
                 distance[v] = distance[u] + weight; // Update the distance
-                pq.push(dijkstraVertex(v, distance[v], u));
+                pq->dijkstraVertices[v]->distance = distance[v];
+                pq->dijkstraVertices[v]->parent = u;
                 parent[v] = u;// Push the updated distance into the priority queue
             }
             elem = elem->next;
@@ -293,8 +320,14 @@ void adjacency_list::bellman_ford(int source, int end) {
         return;
     }
 
-    std::vector<int> distance(numVertices, INT_MAX);
-    std::vector<int> parent(numVertices, -1);
+    int* distance = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        distance[i] = INT_MAX;
+    }
+    int* parent = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        parent[i] = -1;
+    }
 
     // Initialize distance array
     distance[source] = 0;
@@ -332,20 +365,31 @@ void adjacency_list::print_dijkstra(int source, int end) {
         return;
     }
 
-    std::vector<int> distance(numVertices, INT_MAX); // Array to store the shortest distances from the source
-    std::vector<bool> visited(numVertices, false); // Array to track visited vertices
-    std::vector<int> parent(numVertices, -1);
+    int *parent = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        parent[i] = -1;
+    }
+
+    int* distance = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        distance[i] =INT_MAX;
+    }
+    bool* visited = new bool[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        visited[i] = false;
+    }
 
 
-    std::priority_queue<dijkstraVertex, std::vector<dijkstraVertex>, std::greater<dijkstraVertex>> pq; // Priority queue to store vertices and their distances
+    DijkstraHeap* pq = new DijkstraHeap(numVertices); // Priority queue to store vertices and their distances
 
     distance[source] = 0; // Distance from source to itself is 0
-    pq.push(dijkstraVertex(source, distance[source], -1)); // Push the source vertex into the priority queue
+    pq->dijkstraVertices[source]->distance = distance[source];
+    pq->dijkstraVertices[source]->parent = -1;
 
-    while (!pq.empty()) {
-        int u = pq.top().index; // Extract the vertex with minimum distance
-
-        pq.pop();
+    while (pq->is_not_empty()) {
+        pq->create_heap();
+        auto vertex = pq->pop_min();
+        int u = vertex->index;
 
         if (visited[u]) {
             continue; // Skip if the vertex is already visited
@@ -360,7 +404,8 @@ void adjacency_list::print_dijkstra(int source, int end) {
 
             if (!visited[v] && distance[u] != INT_MAX && distance[u] + weight < distance[v]) {
                 distance[v] = distance[u] + weight; // Update the distance
-                pq.push(dijkstraVertex(v, distance[v], u));
+                pq->dijkstraVertices[v]->distance = distance[v];
+                pq->dijkstraVertices[v]->parent = u;
                 parent[v] = u;// Push the updated distance into the priority queue
             }
             elem = elem->next;
@@ -373,15 +418,15 @@ void adjacency_list::print_dijkstra(int source, int end) {
     } else {
         std::cout << "Distance: " << distance[end] << std::endl;
         std::cout << "Path: ";
-        std::stack<int> path;
+        double_linked_list_int* path = new double_linked_list_int(0);
         int current = end;
+        int path_length = 0;
         while (current != -1) {
-            path.push(current);
+            path->add_back(current);
             current = parent[current];
         }
-        while (!path.empty()) {
-            std::cout << path.top() << " ";
-            path.pop();
+        while (path->is_not_empty()) {
+            std::cout << path->pop_back() << " ";
         }
         std::cout << std::endl;
     }
@@ -397,22 +442,29 @@ void adjacency_list::printPrim() {
     }
 
 
-    std::vector<int> parent(numVertices, -1); // Array to store constructed MST
-    std::vector<int> key(numVertices, INT_MAX); // Key values used to pick the minimum weight edge
-    std::vector<bool> mstSet(numVertices, false); // To represent set of vertices included in MST
+    int *parent = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        parent[i] = -1;
+    }
 
-
-
-    std::priority_queue<primVertex, std::vector<primVertex>, std::greater<primVertex>> pq; // Priority queue to store vertices and their weights
-
+    int* key = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        key[i] =INT_MAX;
+    }
+    bool* mstSet = new bool[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        mstSet[i] = false;
+    }
+    primHeap* pq = new primHeap(numVertices);
     // Start with vertex 0
-    pq.push(primVertex(0, 0)); // Vertex 0 has key 0
+    pq->primVertices[0]->key = 0;
     key[0] = 0;
 
     // Loop until all vertices are included in MST
-    while (!pq.empty()) {
-        int u = pq.top().vertex; // Extract the vertex with minimum key value
-        pq.pop();
+    while (pq->is_not_empty()) {
+        pq->create_heap();
+        auto elem = pq->pop();
+        int u = elem->vertex;
 
         mstSet[u] = true; // Add the extracted vertex to the MST set
         auto list = adjacency_lists[u]->get_head();
@@ -423,14 +475,14 @@ void adjacency_list::printPrim() {
             if (!mstSet[v] && weight < key[v]) {
                 key[v] = weight;
                 parent[v] = u;
-                pq.push(primVertex(key[v], v));
+                pq->primVertices[pq->position[v]]->key = weight;
             }
             list = list->next;
         }
     }
     std::cout << "Minimum Spanning Tree:\n";
     std::cout << "Edge\tWeight\n";
-    for (int i = 1; i < parent.size(); i++) {
+    for (int i = 1; i < numVertices; i++) {
         int u = parent[i];
         auto elem = adjacency_lists[u]->get_head();
         while(elem) {
@@ -441,6 +493,10 @@ void adjacency_list::printPrim() {
             elem = elem->next;
         }
     }
+    delete[] mstSet;
+    delete[] key;
+    delete[] parent;
+    delete pq;
 
 
 }
@@ -454,40 +510,42 @@ void adjacency_list::printKruskal() {
         return;
     }
 
-
-    std::vector<kruskal_edge> edges;
+    int edge = 0;
+    kruskal_edge** edges = new kruskal_edge * [numEdges];
     for (int u = 0; u < numVertices; u++) {
         auto elem = adjacency_lists[u]->get_head();
         while(elem) {
             int v = elem->value.neighbour;
             int weight = elem->value.weight;
-            edges.push_back(kruskal_edge(u, v, weight));
+            edges[edge] = new kruskal_edge(v, u, weight);
+            edge++;
             elem = elem->next;
         }
     }
 
     // Sort the edges in non-decreasing order of weights
-    std::sort(edges.begin(), edges.end(), compareEdges);
+    Sort::quickSortEdges(edges,0,numEdges-1);
 
-    std::vector<Subset> subsets(numVertices); // Array to store subsets for union-find
+    Subset** subsets = new Subset * [numVertices];
 
     for (int v = 0; v <numVertices; v++) {
-        subsets[v].parent = v;
-        subsets[v].rank = 0;
+        subsets[v] = new Subset();
+        subsets[v]->parent = v;
+        subsets[v]->rank = 0;
     }
 
-    std::vector<kruskal_edge> mst; // Minimum spanning tree
-    int edgeCount = 0; // Count of edges included in the MST
+    kruskal_edge** mst = new kruskal_edge * [numVertices-1];
+    int edgeCount = 0;
 
-    for (const kruskal_edge& edge : edges) {
-        int u = edge.u;
-        int v = edge.v;
+    for (int i = 0; i< numEdges;i++) {
+        int u = edges[i]->u;
+        int v = edges[i]->v;
 
         int uParent = findSet(subsets, u);
         int vParent = findSet(subsets, v);
 
         if (uParent != vParent) {
-            mst.push_back(edge);
+            mst[edgeCount] = edges[i];
             unionSets(subsets, uParent, vParent);
             edgeCount++;
         }
@@ -498,32 +556,32 @@ void adjacency_list::printKruskal() {
     }
     std::cout << "Minimum Spanning Tree:\n";
     std::cout << "Edge\tWeight\n";
-    for (const kruskal_edge& edge : mst) {
-        std::cout << edge.u << " - " << edge.v << "\t" << edge.weight << "\n";
+    for (int i = 0; i<numVertices-1; i++) {
+        std::cout << mst[i]->u << " - " << mst[i]->v << " \t " << mst[i]->weight << "\n";
     }
+    delete [] subsets;
 }
 
-void adjacency_list::unionSets(std::vector<Subset> &subsets, int x, int y) {
+void adjacency_list::unionSets(Subset **subsets, int x, int y) {
     int xRoot = findSet(subsets, x);
     int yRoot = findSet(subsets, y);
 
-    if (subsets[xRoot].rank < subsets[yRoot].rank) {
-        subsets[xRoot].parent = yRoot;
-    } else if (subsets[xRoot].rank > subsets[yRoot].rank) {
-        subsets[yRoot].parent = xRoot;
+    if (subsets[xRoot]->rank < subsets[yRoot]->rank) {
+        subsets[xRoot]->parent = yRoot;
+    } else if (subsets[xRoot]->rank > subsets[yRoot]->rank) {
+        subsets[yRoot]->parent = xRoot;
     } else {
-        subsets[yRoot].parent = xRoot;
-        subsets[xRoot].rank++;
+        subsets[yRoot]->parent = xRoot;
+        subsets[xRoot]->rank++;
     }
 
 }
 
-int adjacency_list::findSet(std::vector<Subset> &subsets, int i) {
-    if (subsets[i].parent != i) {
-        subsets[i].parent = findSet(subsets, subsets[i].parent);
+int adjacency_list::findSet(Subset **subsets, int i) {
+    if (subsets[i]->parent != i) {
+        subsets[i]->parent = findSet(subsets, subsets[i]->parent);
     }
-    return subsets[i].parent;
-
+    return subsets[i]->parent;
 }
 
 bool adjacency_list::compareEdges(const kruskal_edge &a, const kruskal_edge &b) {
@@ -544,8 +602,14 @@ void adjacency_list::print_bellman_ford(int source, int end) {
         return;
     }
 
-    std::vector<int> distance(numVertices, INT_MAX);
-    std::vector<int> parent(numVertices, -1);
+    int* distance = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        distance[i] = INT_MAX;
+    }
+    int* parent = new int[numVertices];
+    for (int i = 0; i < numVertices; ++i) {
+        parent[i] = -1;
+    }
 
     // Initialize distance array
     distance[source] = 0;
@@ -573,18 +637,21 @@ void adjacency_list::print_bellman_ford(int source, int end) {
     } else {
         std::cout << "Distance: " << distance[end] << std::endl;
         std::cout << "Path: ";
-        std::stack<int> path;
+        double_linked_list_int* path = new double_linked_list_int(0);
         int current = end;
         while (current != -1) {
-            path.push(current);
+            path->add_back(current);
             current = parent[current];
         }
-        while (!path.empty()) {
-            std::cout << path.top() << " ";
-            path.pop();
+        while (path->is_not_empty()) {
+            std::cout << path->pop_back()<< " ";
         }
         std::cout << std::endl;
+        delete path;
     }
+    delete[] parent;
+    delete[] distance;
+
 }
 
 void adjacency_list::generate_graph(int vertices) {
