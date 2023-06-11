@@ -167,19 +167,17 @@ void adjacency_list::prim() {
         mstSet[i] = false;
     }
     primHeap* pq = new primHeap(numVertices);
-    // Start with vertex 0
+
     pq->primVertices[0]->key = 0;
     key[0] = 0;
 
-    // Loop until all vertices are included in MST
     while (pq->is_not_empty()) {
         pq->create_heap();
         auto elem = pq->pop();
         int u = elem->vertex;
 
-        mstSet[u] = true; // Add the extracted vertex to the MST set
+        mstSet[u] = true;
         auto list = adjacency_lists[u]->get_head();
-        // Update key value and parent index of the adjacent vertices of the extracted vertex
         while (list) {
             int v = list->value.neighbour;
             int weight = list->value.weight;
@@ -191,6 +189,9 @@ void adjacency_list::prim() {
             list = list->next;
         }
     }
+    delete[] key;
+    delete[] mstSet;
+    delete[] parent;
 }
 
 void adjacency_list::kruskal() {
@@ -199,7 +200,6 @@ void adjacency_list::kruskal() {
     } else if(numVertices == 1){
         return;
     }
-    display_lists();
     int edge = 0;
     kruskal_edge** edges = new kruskal_edge * [numEdges*2];
     for (int u = 0; u < numVertices; u++) {
@@ -214,7 +214,6 @@ void adjacency_list::kruskal() {
     }
 
 
-    // Sort the edges in non-decreasing order of weights
 
     Sort::quickSortEdges(edges,0,numEdges-1);
 
@@ -229,7 +228,7 @@ void adjacency_list::kruskal() {
     kruskal_edge** mst = new kruskal_edge * [numVertices-1];
     int edgeCount = 0;
 
-    for (int i = 0; i< numEdges;i++) {
+    for (int i = 0; i< numEdges*2;i++) {
         int u = edges[i]->u;
         int v = edges[i]->v;
 
@@ -243,11 +242,12 @@ void adjacency_list::kruskal() {
         }
 
         if (edgeCount == numVertices - 1) {
-            break; // MST is complete
+            break;
         }
     }
     delete [] subsets;
-
+    delete[] edges;
+    delete[] mst;
 }
 
 void adjacency_list::dijkstra(int source, int end) {
@@ -276,9 +276,9 @@ void adjacency_list::dijkstra(int source, int end) {
     }
 
 
-    DijkstraHeap* pq = new DijkstraHeap(numVertices); // Priority queue to store vertices and their distances
+    DijkstraHeap* pq = new DijkstraHeap(numVertices);
 
-    distance[source] = 0; // Distance from source to itself is 0
+    distance[source] = 0;
     pq->dijkstraVertices[source]->distance = distance[source];
     pq->dijkstraVertices[source]->parent = -1;
 
@@ -288,10 +288,10 @@ void adjacency_list::dijkstra(int source, int end) {
         int u = vertex->index;
 
         if (visited[u]) {
-            continue; // Skip if the vertex is already visited
+            continue;
         }
 
-        visited[u] = true; // Mark the vertex as visited
+        visited[u] = true;
 
         auto elem = adjacency_lists[u]->get_head();
         while(elem) {
@@ -299,15 +299,18 @@ void adjacency_list::dijkstra(int source, int end) {
             int weight = elem->value.weight;
 
             if (!visited[v] && distance[u] != INT_MAX && distance[u] + weight < distance[v]) {
-                distance[v] = distance[u] + weight; // Update the distance
+                distance[v] = distance[u] + weight;
                 pq->dijkstraVertices[v]->distance = distance[v];
                 pq->dijkstraVertices[v]->parent = u;
-                parent[v] = u;// Push the updated distance into the priority queue
+                parent[v] = u;
             }
             elem = elem->next;
         }
     }
-
+    delete[] distance;
+    delete[] visited;
+    delete[] parent;
+    delete pq;
 }
 
 void adjacency_list::bellman_ford(int source, int end) {
@@ -330,10 +333,8 @@ void adjacency_list::bellman_ford(int source, int end) {
         parent[i] = -1;
     }
 
-    // Initialize distance array
     distance[source] = 0;
 
-    // Relax edges repeatedly |V|-1 times
     for (int i = 1; i <= numVertices - 1; ++i) {
         for (int u = 0; u < numVertices; ++u) {
             auto elem = adjacency_lists[u]->get_head();
@@ -349,7 +350,8 @@ void adjacency_list::bellman_ford(int source, int end) {
             }
         }
     }
-
+    delete[] distance;
+    delete[] parent;
 }
 
 void adjacency_list::print_dijkstra(int source, int end) {
@@ -381,9 +383,9 @@ void adjacency_list::print_dijkstra(int source, int end) {
     }
 
 
-    DijkstraHeap* pq = new DijkstraHeap(numVertices); // Priority queue to store vertices and their distances
+    DijkstraHeap* pq = new DijkstraHeap(numVertices);
 
-    distance[source] = 0; // Distance from source to itself is 0
+    distance[source] = 0;
     pq->dijkstraVertices[source]->distance = distance[source];
     pq->dijkstraVertices[source]->parent = -1;
 
@@ -393,10 +395,10 @@ void adjacency_list::print_dijkstra(int source, int end) {
         int u = vertex->index;
 
         if (visited[u]) {
-            continue; // Skip if the vertex is already visited
+            continue;
         }
 
-        visited[u] = true; // Mark the vertex as visited
+        visited[u] = true;
 
         auto elem = adjacency_lists[u]->get_head();
         while(elem) {
@@ -404,10 +406,10 @@ void adjacency_list::print_dijkstra(int source, int end) {
             int weight = elem->value.weight;
 
             if (!visited[v] && distance[u] != INT_MAX && distance[u] + weight < distance[v]) {
-                distance[v] = distance[u] + weight; // Update the distance
+                distance[v] = distance[u] + weight;
                 pq->dijkstraVertices[v]->distance = distance[v];
                 pq->dijkstraVertices[v]->parent = u;
-                parent[v] = u;// Push the updated distance into the priority queue
+                parent[v] = u;
             }
             elem = elem->next;
         }
@@ -430,7 +432,11 @@ void adjacency_list::print_dijkstra(int source, int end) {
             std::cout << path->pop_back() << " ";
         }
         std::cout << std::endl;
+        delete path;
     }
+    delete[] distance;
+    delete[] parent;
+    delete[] visited;
 }
 
 void adjacency_list::printPrim() {
@@ -457,19 +463,16 @@ void adjacency_list::printPrim() {
         mstSet[i] = false;
     }
     primHeap* pq = new primHeap(numVertices);
-    // Start with vertex 0
     pq->primVertices[0]->key = 0;
     key[0] = 0;
 
-    // Loop until all vertices are included in MST
     while (pq->is_not_empty()) {
         pq->create_heap();
         auto elem = pq->pop();
         int u = elem->vertex;
 
-        mstSet[u] = true; // Add the extracted vertex to the MST set
+        mstSet[u] = true;
         auto list = adjacency_lists[u]->get_head();
-        // Update key value and parent index of the adjacent vertices of the extracted vertex
         while (list) {
             int v = list->value.neighbour;
             int weight = list->value.weight;
@@ -498,8 +501,6 @@ void adjacency_list::printPrim() {
     delete[] key;
     delete[] parent;
     delete pq;
-
-
 }
 
 void adjacency_list::printKruskal() {
@@ -524,8 +525,7 @@ void adjacency_list::printKruskal() {
         }
     }
 
-    // Sort the edges in non-decreasing order of weights
-    Sort::quickSortEdges(edges,0,numEdges-1);
+    Sort::quickSortEdges(edges,0,(numEdges*2)-1);
 
     Subset** subsets = new Subset * [numVertices];
 
@@ -538,7 +538,7 @@ void adjacency_list::printKruskal() {
     kruskal_edge** mst = new kruskal_edge * [numVertices-1];
     int edgeCount = 0;
 
-    for (int i = 0; i< numEdges;i++) {
+    for (int i = 0; i< numEdges*2;i++) {
         int u = edges[i]->u;
         int v = edges[i]->v;
 
@@ -552,7 +552,7 @@ void adjacency_list::printKruskal() {
         }
 
         if (edgeCount == numVertices - 1) {
-            break; // MST is complete
+            break;
         }
     }
     std::cout << "Minimum Spanning Tree:\n";
@@ -561,6 +561,8 @@ void adjacency_list::printKruskal() {
         std::cout << mst[i]->u << " - " << mst[i]->v << " \t " << mst[i]->weight << "\n";
     }
     delete [] subsets;
+    delete[] mst;
+    delete[] edges;
 }
 
 void adjacency_list::unionSets(Subset **subsets, int x, int y) {
@@ -612,10 +614,8 @@ void adjacency_list::print_bellman_ford(int source, int end) {
         parent[i] = -1;
     }
 
-    // Initialize distance array
     distance[source] = 0;
 
-    // Relax edges repeatedly |V|-1 times
     for (int i = 1; i <= numVertices - 1; ++i) {
         for (int u = 0; u < numVertices; ++u) {
             auto elem = adjacency_lists[u]->get_head();
@@ -652,7 +652,6 @@ void adjacency_list::print_bellman_ford(int source, int end) {
     }
     delete[] parent;
     delete[] distance;
-
 }
 
 void adjacency_list::generate_graph(int vertices) {

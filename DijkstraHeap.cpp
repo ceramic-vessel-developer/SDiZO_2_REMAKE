@@ -7,7 +7,6 @@
 DijkstraHeap::DijkstraHeap(int vertices) {
     dijkstraVertices = new dijkstraVertex *[vertices];
     position = new int[vertices];
-    // stworzenie pomocniczych obiektów - wierzchołków (numer wierzchołka, distance)
     for (int i = 0; i < vertices; ++i) {
         dijkstraVertices[i] = new dijkstraVertex(i, INT_MAX,-1);
         position[i] = i;

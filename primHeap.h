@@ -14,7 +14,7 @@ class primHeap {
 
 public:
     primVertex **primVertices;
-    int *position; // position[i] pokazuje gdzie w stosie jest wierzchołek 'i'
+    int *position;
 
     primHeap(int);
 

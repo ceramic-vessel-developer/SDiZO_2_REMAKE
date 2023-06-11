@@ -9,7 +9,7 @@ primHeap::primHeap(int vertices) {
     primVertices = new primVertex *[vertices];
     position = new int[vertices];
     for (int i = 0; i < vertices; ++i) {
-        primVertices[i] = new primVertex( INT_MAX,i); // INT_MAX/2 jako nieskończoność
+        primVertices[i] = new primVertex( INT_MAX,i);
         position[i] = i;
     }
     heapSize = vertices;
