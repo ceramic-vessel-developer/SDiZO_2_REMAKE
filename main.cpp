@@ -2,13 +2,9 @@
 #include <windows.h>
 #include <fstream>
 #include "incidence_matrix.h"
-#include "double_linked_list.h"
 #include "adjacency_list.h"
 #include "Menu_helper.h"
-#include "Sort.h"
-#include "DijkstraHeap.h"
 
-//TODO Upewnij sie ze wyniki sa usrednione xD
 
 void test();
 void research();
@@ -22,18 +18,6 @@ void bellman();
 int main() {
     int choice;
     bool error = true;
-//    DijkstraHeap* test = new DijkstraHeap(5);
-//    test->dijkstraVertices[3]->distance = 4;
-//    test->dijkstraVertices[1]->distance = 15;
-//    test->create_heap();
-//
-//    for (int i = 0; i < 5; ++i) {
-//        test->create_heap();
-//        auto elem = test->pop_min();
-//        std::cout << elem->index << ' ' << elem->distance << std::endl;
-//        test->dijkstraVertices[test->position[4]]->distance = 4;
-//        test->dijkstraVertices[test->position[2]]->distance = 2;
-//    }
     while (error) {
         std::cout << "Wybierz funkcjonalnosc programu:\n1)Badania\n2)Testowanie funkcjonalnosci" << std::endl;
 
@@ -221,10 +205,10 @@ void path(){
 }
 
 void research(){
-//    prim();
+    prim();
     kruskal();
-//    dijkstra();
-//    bellman();
+    dijkstra();
+    bellman();
 
 }
 
@@ -264,6 +248,7 @@ void prim(){
                 delete list;
                 times[0] += elapsed_time_double;
             }
+            times[0] = times[0]/number_of_tests;
             for (int k = 0; k < number_of_tests; ++k) {
                 std::cout<< "PRIM MATRIX " << i << ' '<< j <<' '<< k << std::endl;
                 matrix = new incidence_matrix(size,density,false);
@@ -280,6 +265,7 @@ void prim(){
                 delete matrix;
                 times[1] += elapsed_time_double;
             }
+            times[1] = times[1]/number_of_tests;
             f.open(path,std::ios::app);
             f << size << ' ' << density<< ' ' << times[0] << ' ' << times[1] << std::endl;
             f.close();
@@ -389,6 +375,7 @@ void dijkstra(){
                 delete list;
                 times[0] += elapsed_time_double;
             }
+            times[0] = times[0]/number_of_tests;
             for (int k = 0; k < number_of_tests; ++k) {
                 matrix = new incidence_matrix(size,density,true);
                 matrix->generate_matrix(size);
@@ -407,6 +394,7 @@ void dijkstra(){
                 delete matrix;
                 times[1] += elapsed_time_double;
             }
+            times[1] = times[1]/number_of_tests;
             f.open(path,std::ios::app);
             f << size << ' ' << density<< ' ' << times[0] << ' ' << times[1] << std::endl;
             f.close();
@@ -455,6 +443,7 @@ void bellman(){
                 delete list;
                 times[0] += elapsed_time_double;
             }
+            times[0] = times[0]/number_of_tests;
             for (int k = 0; k < number_of_tests; ++k) {
                 matrix = new incidence_matrix(size,density, true);
                 matrix->generate_matrix(size);
@@ -474,6 +463,7 @@ void bellman(){
                 delete matrix;
                 times[1] += elapsed_time_double;
             }
+            times[1] = times[1]/number_of_tests;
             f.open(path,std::ios::app);
             f << size << ' ' << density<< ' ' << times[0] << ' ' << times[1] << std::endl;
             f.close();
