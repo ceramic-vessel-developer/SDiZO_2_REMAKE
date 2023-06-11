@@ -13,10 +13,7 @@
 #include "primHeap.h"
 #include "double_linked_list_int.h"
 #include <vector>
-#include <queue>
 #include <climits>
-#include <stack>
-#include <algorithm>
 
 incidence_matrix::incidence_matrix(int vertices, int density, bool directed) {
     srand(time(NULL));
@@ -261,7 +258,6 @@ void incidence_matrix::add_undirected_edge(int start, int end, int weight) {
         return;
     }
 
-    // Find an available edge slot in the matrix
     int edge = -1;
     bool empty;
     for (int i = 0; i < numEdges; i++) {
@@ -283,7 +279,6 @@ void incidence_matrix::add_undirected_edge(int start, int end, int weight) {
         return;
     }
 
-    // Add the edge between start and end vertices
     matrix[edge][start] = 1;
     matrix[edge][end] = 1;
     weights[edge] = weight;
@@ -340,8 +335,6 @@ void incidence_matrix::prim() {
         return;
     }
 
-
-
     int *parent = new int[numVertices];
     for (int i = 0; i < numVertices; ++i) {
         parent[i] = -1;
@@ -356,11 +349,10 @@ void incidence_matrix::prim() {
         mstSet[i] = false;
     }
     primHeap* pq = new primHeap(numVertices);
-    // Start with vertex 0
+
     pq->primVertices[0]->key = 0;
     key[0] = 0;
 
-    // Loop until all vertices are included in MST
     while (pq->is_not_empty()) {
         pq->create_heap();
         auto elem = pq->pop();
@@ -368,13 +360,11 @@ void incidence_matrix::prim() {
 
         if (mstSet[u]) continue;
 
-        mstSet[u] = true; // Add the extracted vertex to the MST set
+        mstSet[u] = true;
 
-        // Update key value and parent index of the adjacent vertices of the extracted vertex
         for (int e = 0; e < numEdges; e++) {
             int v = -1;
             if (matrix[e][u] != 0) {
-                // Find the other vertex of the edge incident on u
                 for (int i = 0; i < numVertices; i++) {
                     if (matrix[e][i] == 1 && i != u) {
                         v = i;
@@ -430,7 +420,6 @@ void incidence_matrix::kruskal() {
 
     Sort::quickSortEdges(edges,0,numEdges-1);
 
-//    std::vector<Subset> subsets(numVertices);// Array to store subsets for union-find
     Subset** subsets = new Subset * [numVertices];
 
 
@@ -457,11 +446,12 @@ void incidence_matrix::kruskal() {
         }
 
         if (edgeCount == numVertices - 1) {
-            break; // MST is complete
+            break;
         }
     }
     delete [] subsets;
     delete[] edges;
+    delete[] mst;
 
 }
 
@@ -486,10 +476,8 @@ void incidence_matrix::bellman_ford(int source, int end) {
     }
     int u = 0,v = 0,w;
 
-    // Initialize distance array
     distance[source] = 0;
 
-    // Relax edges repeatedly |V|-1 times
     for (int i = 0; i < numVertices - 1; ++i) {
         for (int j = 0; j< numEdges;j++) {
             u = 0;
@@ -538,11 +526,9 @@ void incidence_matrix::printPrim() {
     }
 
     primHeap* pq = new primHeap(numVertices);
-    // Start with vertex 0
     pq->primVertices[0]->key = 0;
     key[0] = 0;
 
-    // Loop until all vertices are included in MST
     while (pq->is_not_empty()) {
         pq->create_heap();
         auto elem = pq->pop();
@@ -551,13 +537,11 @@ void incidence_matrix::printPrim() {
 
         if (mstSet[u]) continue;
 
-        mstSet[u] = true; // Add the extracted vertex to the MST set
+        mstSet[u] = true;
 
-        // Update key value and parent index of the adjacent vertices of the extracted vertex
         for (int e = 0; e < numEdges; e++) {
             int v = -1;
             if (matrix[e][u] != 0) {
-                // Find the other vertex of the edge incident on u
                 for (int i = 0; i < numVertices; i++) {
                     if (matrix[e][i] == 1 && i != u) {
                         v = i;
@@ -612,9 +596,9 @@ void incidence_matrix::dijkstra(int source, int end) {
     }
 
 
-    DijkstraHeap* pq = new DijkstraHeap(numVertices); // Priority queue to store vertices and their distances
+    DijkstraHeap* pq = new DijkstraHeap(numVertices);
 
-    dist[source] = 0; // Distance from source to itself is 0
+    dist[source] = 0;
     pq->dijkstraVertices[source]->distance = dist[source];
     pq->dijkstraVertices[source]->parent = -1;
 
@@ -624,15 +608,14 @@ void incidence_matrix::dijkstra(int source, int end) {
         int u = elem->index;
 
         if (visited[u]) {
-            continue; // Skip if the vertex is already visited
+            continue;
         }
 
-        visited[u] = true; // Mark the vertex as visited
+        visited[u] = true;
 
-        // Update the distances of the neighboring vertices
         for (int e = 0; e < numEdges; e++) {
             if (matrix[e][u] == 1) {
-                int v = -1; // Neighbor vertex
+                int v = -1;
 
                 for (int j = 0; j < numVertices; j++) {
                     if (matrix[e][j] == -1 ) {
@@ -645,7 +628,7 @@ void incidence_matrix::dijkstra(int source, int end) {
                     int weight = weights[e];
 
                     if (!visited[v] && dist[u] != INT_MAX && dist[u] + weight < dist[v]) {
-                        dist[v] = dist[u] + weight; // Update the distance
+                        dist[v] = dist[u] + weight;
                         pq->dijkstraVertices[v]->distance = dist[v];
                         pq->dijkstraVertices[v]->parent = u;
                         parent[v] = u;
@@ -689,9 +672,9 @@ void incidence_matrix::printDijkstra(int source, int end) {
     }
 
 
-    DijkstraHeap* pq = new DijkstraHeap(numVertices); // Priority queue to store vertices and their distances
+    DijkstraHeap* pq = new DijkstraHeap(numVertices);
 
-    dist[source] = 0; // Distance from source to itself is 0
+    dist[source] = 0;
     pq->dijkstraVertices[source]->distance = dist[source];
     pq->dijkstraVertices[source]->parent = -1;
 
@@ -701,15 +684,14 @@ void incidence_matrix::printDijkstra(int source, int end) {
         int u = elem->index;
 
         if (visited[u]) {
-            continue; // Skip if the vertex is already visited
+            continue;
         }
 
-        visited[u] = true; // Mark the vertex as visited
+        visited[u] = true;
 
-        // Update the distances of the neighboring vertices
         for (int e = 0; e < numVertices; e++) {
             if (matrix[e][u] == 1) {
-                int v = -1; // Neighbor vertex
+                int v = -1;
 
                 for (int j = 0; j < numVertices; j++) {
                     if (matrix[e][j] == -1 ) {
@@ -748,6 +730,7 @@ void incidence_matrix::printDijkstra(int source, int end) {
             std::cout << path->pop_back() << " ";
         }
         std::cout << std::endl;
+        delete path;
     }
     delete[] dist;
     delete[] parent;
@@ -766,7 +749,6 @@ void incidence_matrix::printKruskal() {
 
     int v = 0,u = 0, edge = 0;
 
-    // Create a vector of edges
     kruskal_edge** edges = new kruskal_edge * [numEdges];
 
     for (int e = 0; e < numEdges; e++) {
@@ -787,11 +769,9 @@ void incidence_matrix::printKruskal() {
     }
 
 
-    // Sort the edges in non-decreasing order of weights
 
     Sort::quickSortEdges(edges,0,numEdges-1);
 
-//    std::vector<Subset> subsets(numVertices);// Array to store subsets for union-find
     Subset** subsets = new Subset * [numVertices];
 
 
@@ -803,7 +783,7 @@ void incidence_matrix::printKruskal() {
 
     kruskal_edge** mst = new kruskal_edge * [numVertices-1];
 
-    int edgeCount = 0; // Count of edges included in the MST
+    int edgeCount = 0;
 
     for (int i = 0; i< numEdges;i++) {
         int u = edges[i]->u;
@@ -819,7 +799,7 @@ void incidence_matrix::printKruskal() {
         }
 
         if (edgeCount == numVertices - 1) {
-            break; // MST is complete
+            break;
         }
     }
     std::cout << "Minimum Spanning Tree:\n";
@@ -829,6 +809,7 @@ void incidence_matrix::printKruskal() {
     }
     delete [] subsets;
     delete[] edges;
+    delete[] mst;
 }
 
 int incidence_matrix::findSet(Subset **subsets, int i) {
@@ -879,10 +860,8 @@ void incidence_matrix::print_bellman_ford(int source, int end) {
     }
     int u = 0,v = 0,w;
 
-    // Initialize distance array
     distance[source] = 0;
 
-    // Relax edges repeatedly |V|-1 times
     for (int i = 0; i < numVertices - 1; ++i) {
         for (int j = 0; j< numEdges;j++) {
             u = 0;
