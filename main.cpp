@@ -8,6 +8,8 @@
 #include "Sort.h"
 #include "DijkstraHeap.h"
 
+//TODO Upewnij sie ze wyniki sa usrednione xD
+
 void test();
 void research();
 void MST();
@@ -219,10 +221,10 @@ void path(){
 }
 
 void research(){
-    prim();
-//    kruskal();
-    dijkstra();
-    bellman();
+//    prim();
+    kruskal();
+//    dijkstra();
+//    bellman();
 
 }
 
@@ -306,22 +308,23 @@ void kruskal(){
         for (int j = 0; j < 4; ++j) {
             size = sizes[i];
             density = densities[j];
-//            for (int k = 0; k < number_of_tests; ++k) {
-//                std::cout<< "KRUSKAL LIST " << i << ' '<< j <<' '<< k << std::endl;
-//                list = new adjacency_list(size,density,false);
-//                list->generate_graph(size);
-//
-//                QueryPerformanceCounter(&start_time);
-//                list->kruskal();
-//                QueryPerformanceCounter(&end_time);
-//
-//                elapsed_time.QuadPart = end_time.QuadPart - start_time.QuadPart;
-//                elapsed_time_double = static_cast<long double>(elapsed_time.QuadPart);
-//                elapsed_time_double *= 1000000; // result in microseconds
-//                elapsed_time_double /= frequency.QuadPart;
-//                delete list;
-//                times[0] += elapsed_time_double;
-//            }
+            for (int k = 0; k < number_of_tests; ++k) {
+                std::cout<< "KRUSKAL LIST " << i << ' '<< j <<' '<< k << std::endl;
+                list = new adjacency_list(size,density,false);
+                list->generate_graph(size);
+
+                QueryPerformanceCounter(&start_time);
+                list->kruskal();
+                QueryPerformanceCounter(&end_time);
+
+                elapsed_time.QuadPart = end_time.QuadPart - start_time.QuadPart;
+                elapsed_time_double = static_cast<long double>(elapsed_time.QuadPart);
+                elapsed_time_double *= 1000000; // result in microseconds
+                elapsed_time_double /= frequency.QuadPart;
+                delete list;
+                times[0] += elapsed_time_double;
+            }
+            times[0] = times[0]/number_of_tests;
             for (int k = 0; k < number_of_tests; ++k) {
                 matrix = new incidence_matrix(size,density,false);
                 std::cout<< "KRUSKAL MATRIX " << i << ' '<< j <<' '<< k << std::endl;
@@ -338,6 +341,7 @@ void kruskal(){
                 delete matrix;
                 times[1] += elapsed_time_double;
             }
+            times[1] = times[1]/number_of_tests;
             f.open(path,std::ios::app);
             f << size << ' ' << density<< ' ' << times[0] << ' ' << times[1] << std::endl;
             f.close();

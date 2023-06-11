@@ -199,9 +199,9 @@ void adjacency_list::kruskal() {
     } else if(numVertices == 1){
         return;
     }
-
+    display_lists();
     int edge = 0;
-    kruskal_edge** edges = new kruskal_edge * [numEdges];
+    kruskal_edge** edges = new kruskal_edge * [numEdges*2];
     for (int u = 0; u < numVertices; u++) {
         auto elem = adjacency_lists[u]->get_head();
         while(elem) {
@@ -212,6 +212,7 @@ void adjacency_list::kruskal() {
             elem = elem->next;
         }
     }
+
 
     // Sort the edges in non-decreasing order of weights
 
@@ -511,7 +512,7 @@ void adjacency_list::printKruskal() {
     }
 
     int edge = 0;
-    kruskal_edge** edges = new kruskal_edge * [numEdges];
+    kruskal_edge** edges = new kruskal_edge * [numEdges*2];
     for (int u = 0; u < numVertices; u++) {
         auto elem = adjacency_lists[u]->get_head();
         while(elem) {
