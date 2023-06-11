@@ -478,19 +478,33 @@ void incidence_matrix::bellman_ford(int source, int end) {
 
     distance[source] = 0;
 
+    int edge = 0;
+
+
+    kruskal_edge** edges = new kruskal_edge * [numEdges];
+
+    for (int e = 0; e < numEdges; e++) {
+        v = -1;
+        u = -1;
+        for (int i = 0; i < numVertices; ++i) {
+            if(matrix[e][i]){
+                if (v == -1){
+                    v = i;
+                }else{
+                    u = i;
+                    edges[edge] = new kruskal_edge(v, u, weights[e]);
+                    edge++;
+                    break;
+                }
+            }
+        }
+    }
+
+
     for (int i = 0; i < numVertices - 1; ++i) {
         for (int j = 0; j< numEdges;j++) {
-            u = 0;
-            v = 0 ;
-            for (int k = 0; k < numVertices; ++k) {
-                if (matrix[j][k] == 1){
-                    u = k;
-                } else if (matrix[j][k] == -1){
-                    v = k;
-                }
-                if (u != 0 && v != 0) break;
-
-            }
+            u = edges[j]->u;
+            v = edges[j]->v;
             w = weights[j];
             if (distance[u] != INT_MAX && distance[u] + w < distance[v]) {
                 distance[v] = distance[u] + w;
@@ -498,6 +512,7 @@ void incidence_matrix::bellman_ford(int source, int end) {
             }
         }
     }
+    delete[] edges;
     delete[] parent;
     delete[] distance;
 }
@@ -861,19 +876,33 @@ void incidence_matrix::print_bellman_ford(int source, int end) {
     int u = 0,v = 0,w;
 
     distance[source] = 0;
+    int edge = 0;
+
+
+    kruskal_edge** edges = new kruskal_edge * [numEdges];
+
+    for (int e = 0; e < numEdges; e++) {
+        v = -1;
+        u = -1;
+        for (int i = 0; i < numVertices; ++i) {
+            if(matrix[e][i]){
+                if (v == -1){
+                    v = i;
+                }else{
+                    u = i;
+                    edges[edge] = new kruskal_edge(v, u, weights[e]);
+                    edge++;
+                    break;
+                }
+            }
+        }
+    }
+
 
     for (int i = 0; i < numVertices - 1; ++i) {
         for (int j = 0; j< numEdges;j++) {
-            u = 0;
-            v = 0 ;
-            for (int k = 0; k < numVertices; ++k) {
-                if (matrix[j][k] == 1){
-                    u = k;
-                } else if (matrix[j][k] == -1){
-                    v = k;
-                }
-                if (u != 0 && v != 0) break;
-            }
+            u = edges[j]->u;
+            v = edges[j]->v;
             w = weights[j];
             if (distance[u] != INT_MAX && distance[u] + w < distance[v]) {
                 distance[v] = distance[u] + w;
@@ -881,6 +910,7 @@ void incidence_matrix::print_bellman_ford(int source, int end) {
             }
         }
     }
+    delete[] edges;
 
     std::cout << "Shortest path from source to vertex " << end << ":" << std::endl;
     if (distance[end] == INT_MAX) {

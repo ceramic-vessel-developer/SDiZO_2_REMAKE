@@ -335,21 +335,34 @@ void adjacency_list::bellman_ford(int source, int end) {
 
     distance[source] = 0;
 
-    for (int i = 1; i <= numVertices - 1; ++i) {
-        for (int u = 0; u < numVertices; ++u) {
-            auto elem = adjacency_lists[u]->get_head();
-            while(elem) {
-                int v = elem->value.neighbour;
-                int w = elem->value.weight;
-
-                if (distance[u] != INT_MAX && distance[u] + w < distance[v]) {
-                    distance[v] = distance[u] + w;
-                    parent[v] = u;
-                }
-                elem = elem->next;
-            }
+    int edge = 0;
+    kruskal_edge** edges = new kruskal_edge * [numEdges];
+    for (int u = 0; u < numVertices; u++) {
+        auto elem = adjacency_lists[u]->get_head();
+        while(elem) {
+            int v = elem->value.neighbour;
+            int weight = elem->value.weight;
+            edges[edge] = new kruskal_edge(u,v, weight);
+            edge++;
+            elem = elem->next;
         }
     }
+
+    int u, v, w;
+    for (int i = 1; i <= numVertices - 1; ++i) {
+        for (int j = 0; j < numVertices; ++j) {
+            u = edges[j]->u;
+            v = edges[j]->v;
+            w = edges[j]->weight;
+
+            if (distance[u] != INT_MAX && distance[u] + w < distance[v]) {
+                distance[v] = distance[u] + w;
+                parent[v] = u;
+            }
+
+        }
+    }
+    delete[] edges;
     delete[] distance;
     delete[] parent;
 }
@@ -616,19 +629,31 @@ void adjacency_list::print_bellman_ford(int source, int end) {
 
     distance[source] = 0;
 
-    for (int i = 1; i <= numVertices - 1; ++i) {
-        for (int u = 0; u < numVertices; ++u) {
-            auto elem = adjacency_lists[u]->get_head();
-            while(elem) {
-                int v = elem->value.neighbour;
-                int w = elem->value.weight;
+    int edge = 0;
+    kruskal_edge** edges = new kruskal_edge * [numEdges];
+    for (int u = 0; u < numVertices; u++) {
+        auto elem = adjacency_lists[u]->get_head();
+        while(elem) {
+            int v = elem->value.neighbour;
+            int weight = elem->value.weight;
+            edges[edge] = new kruskal_edge(u,v, weight);
+            edge++;
+            elem = elem->next;
+        }
+    }
 
-                if (distance[u] != INT_MAX && distance[u] + w < distance[v]) {
-                    distance[v] = distance[u] + w;
-                    parent[v] = u;
-                }
-                elem = elem->next;
+    int u, v, w;
+    for (int i = 1; i <= numVertices - 1; ++i) {
+        for (int j = 0; j < numVertices; ++j) {
+            u = edges[j]->u;
+            v = edges[j]->v;
+            w = edges[j]->weight;
+
+            if (distance[u] != INT_MAX && distance[u] + w < distance[v]) {
+                distance[v] = distance[u] + w;
+                parent[v] = u;
             }
+
         }
     }
 
