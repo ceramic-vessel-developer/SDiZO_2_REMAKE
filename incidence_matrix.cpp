@@ -487,16 +487,17 @@ void incidence_matrix::bellman_ford(int source, int end) {
         v = -1;
         u = -1;
         for (int i = 0; i < numVertices; ++i) {
-            if(matrix[e][i]){
-                if (v == -1){
-                    v = i;
-                }else{
-                    u = i;
-                    edges[edge] = new kruskal_edge(v, u, weights[e]);
-                    edge++;
-                    break;
-                }
+            if(matrix[e][i] == -1) {
+                v = i;
+            } else if (matrix[e][i] == 1) {
+                u = i;
             }
+            if (v != -1 && u != -1) {
+                edges[edge] = new kruskal_edge(u, v, weights[e]);
+                edge++;
+                break;
+            }
+
         }
     }
 
@@ -704,7 +705,7 @@ void incidence_matrix::printDijkstra(int source, int end) {
 
         visited[u] = true;
 
-        for (int e = 0; e < numVertices; e++) {
+        for (int e = 0; e < numEdges; e++) {
             if (matrix[e][u] == 1) {
                 int v = -1;
 
@@ -719,7 +720,7 @@ void incidence_matrix::printDijkstra(int source, int end) {
                     int weight = weights[e];
 
                     if (!visited[v] && dist[u] != INT_MAX && dist[u] + weight < dist[v]) {
-                        dist[v] = dist[u] + weight; // Update the distance
+                        dist[v] = dist[u] + weight;
                         pq->dijkstraVertices[pq->position[v]]->distance = dist[v];
                         pq->dijkstraVertices[pq->position[v]]->parent = u;
                         parent[v] = u;
@@ -885,18 +886,20 @@ void incidence_matrix::print_bellman_ford(int source, int end) {
         v = -1;
         u = -1;
         for (int i = 0; i < numVertices; ++i) {
-            if(matrix[e][i]){
-                if (v == -1){
-                    v = i;
-                }else{
-                    u = i;
-                    edges[edge] = new kruskal_edge(v, u, weights[e]);
-                    edge++;
-                    break;
-                }
+            if(matrix[e][i] == -1) {
+                v = i;
+            } else if (matrix[e][i] == 1) {
+                u = i;
+            }
+            if (v != -1 && u != -1) {
+                edges[edge] = new kruskal_edge(u, v, weights[e]);
+                edge++;
+                break;
+            }
+
             }
         }
-    }
+
 
 
     for (int i = 0; i < numVertices - 1; ++i) {

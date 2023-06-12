@@ -300,8 +300,8 @@ void adjacency_list::dijkstra(int source, int end) {
 
             if (!visited[v] && distance[u] != INT_MAX && distance[u] + weight < distance[v]) {
                 distance[v] = distance[u] + weight;
-                pq->dijkstraVertices[v]->distance = distance[v];
-                pq->dijkstraVertices[v]->parent = u;
+                pq->dijkstraVertices[pq->position[v]]->distance = distance[v];
+                pq->dijkstraVertices[pq->position[v]]->parent = u;
                 parent[v] = u;
             }
             elem = elem->next;
@@ -350,7 +350,7 @@ void adjacency_list::bellman_ford(int source, int end) {
 
     int u, v, w;
     for (int i = 1; i <= numVertices - 1; ++i) {
-        for (int j = 0; j < numVertices; ++j) {
+        for (int j = 0; j < numEdges; ++j) {
             u = edges[j]->u;
             v = edges[j]->v;
             w = edges[j]->weight;
@@ -420,8 +420,8 @@ void adjacency_list::print_dijkstra(int source, int end) {
 
             if (!visited[v] && distance[u] != INT_MAX && distance[u] + weight < distance[v]) {
                 distance[v] = distance[u] + weight;
-                pq->dijkstraVertices[v]->distance = distance[v];
-                pq->dijkstraVertices[v]->parent = u;
+                pq->dijkstraVertices[pq->position[v]]->distance = distance[v];
+                pq->dijkstraVertices[pq->position[v]]->parent = u;
                 parent[v] = u;
             }
             elem = elem->next;
@@ -644,7 +644,7 @@ void adjacency_list::print_bellman_ford(int source, int end) {
 
     int u, v, w;
     for (int i = 1; i <= numVertices - 1; ++i) {
-        for (int j = 0; j < numVertices; ++j) {
+        for (int j = 0; j < numEdges; ++j) {
             u = edges[j]->u;
             v = edges[j]->v;
             w = edges[j]->weight;
