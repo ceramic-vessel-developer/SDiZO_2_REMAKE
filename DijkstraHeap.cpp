@@ -23,9 +23,6 @@ DijkstraHeap::~DijkstraHeap() {
     delete[] position;
 }
 
-bool DijkstraHeap::is_in_heap(int vertex) {
-    return position[vertex] < heapSize;
-}
 
 bool DijkstraHeap::is_not_empty() {
     return heapSize > 0;
@@ -47,7 +44,6 @@ void DijkstraHeap::heapify_down(int parent_index) {
         dijkstraVertices[rightIndex]->distance < dijkstraVertices[smallestIndex]->distance)
         smallestIndex = rightIndex;
     if (smallestIndex != parent_index) {
-        // zamiana elementów stosu oraz odnośników do ich pozycji
         position[dijkstraVertices[smallestIndex]->index] = parent_index;
         position[dijkstraVertices[parent_index]->index] = smallestIndex;
         auto swap = dijkstraVertices[parent_index];

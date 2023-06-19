@@ -156,14 +156,6 @@ void menu_helper::generate_random(int vertices, int density, bool directed) {
     }
 }
 
-void menu_helper::display_list() {
-    list_graph->display_lists();
-}
-
-void menu_helper::display_matrix() {
-    matrix_graph->displayMatrix();
-}
-
 void menu_helper::display_both() {
     std::cout << "MACIERZ" << std::endl;
     matrix_graph->displayMatrix();

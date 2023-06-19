@@ -8,9 +8,9 @@
 
 class kruskal_edge {
 public:
-    int u; // Start vertex
-    int v; // End vertex
-    int weight; // Weight of the edge
+    int u;
+    int v;
+    int weight;
 
     kruskal_edge(int start, int end, int w) : u(start), v(end), weight(w) {}
 };

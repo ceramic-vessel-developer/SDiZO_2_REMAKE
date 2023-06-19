@@ -26,8 +26,6 @@ public:
     void dijkstra(int start, int end);
     void bellman_ford(int start, int end);
 
-    void display_list();
-    void display_matrix();
     void display_both();
 };
 

@@ -24,9 +24,6 @@ primHeap::~primHeap() {
     delete[] position;
 }
 
-bool primHeap::is_in_heap(int vertex) {
-    return position[vertex] < heapSize;
-}
 
 bool primHeap::is_not_empty() {
     return heapSize > 0;

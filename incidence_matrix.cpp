@@ -189,13 +189,13 @@ incidence_matrix::incidence_matrix(std::string file, bool directed) {
                 while (f >> start) {
                     f >> end;
                     f >> weight;
-                    add_directed_edge(start, end, weight%(INT_MAX-1)+1);
+                    add_directed_edge(start, end, weight);
                 }
             } else {
                 while (f >> start) {
                     f >> end;
                     f >> weight;
-                    add_undirected_edge(start, end, weight%(INT_MAX-1)+1);
+                    add_undirected_edge(start, end, weight);
                 }
             }
         }

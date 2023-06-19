@@ -20,8 +20,6 @@ public:
 
     ~primHeap();
 
-    bool is_in_heap(int);
-
     bool is_not_empty();
 
     void create_heap();

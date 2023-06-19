@@ -19,20 +19,12 @@ public:
         dll_elem* next;
     };
 
-    double_linked_list(int size);
-    double_linked_list(std::string file);
     double_linked_list();
     ~double_linked_list();
 
     void clear(dll_elem* elem);
 
-    void add_front(int vertex, int weight);
     void add_back(int vertex, int weight);
-    void add(int vertex, int weight, int index);
-
-    void delete_front();
-    void delete_back();
-    void delete_with_index(int index);
 
     dll_elem* get_head();
 
@@ -44,7 +36,6 @@ private:
     dll_elem* first = nullptr;
     dll_elem* last = nullptr;
 
-    dll_elem* search(int index);
 
 
 };

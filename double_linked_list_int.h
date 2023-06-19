@@ -18,29 +18,17 @@ private:
     dll_elem* first = nullptr;
     dll_elem* last = nullptr;
 
-    dll_elem* search(int index);
 public:
     double_linked_list_int(int size);
-    double_linked_list_int(std::string file);
     ~double_linked_list_int();
 
     void clear(dll_elem* elem);
 
-    void add_front(int item);
     void add_back(int item);
-    void add(int item, int index);
 
-    int pop_front();
     int pop_back();
-    void delete_with_index(int index);
-
-    int* select(int value);
-
-    void show();
 
     bool is_not_empty();
-
-
 };
 
 
