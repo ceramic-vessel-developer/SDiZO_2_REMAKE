@@ -37,10 +37,10 @@ public:
     double_linked_list* neigbours(int vertex);
     void display_lists();
 
-    void prim();
-    void kruskal();
-    void dijkstra(int source, int end);
-    void bellman_ford(int source, int end);
+    void prim(int** parent_p = nullptr,bool print = false);
+    void kruskal(kruskal_edge*** mst_p = nullptr,bool print = false);
+    void dijkstra(int source, int end,int** parent_p = nullptr,int** distance_p = nullptr, bool print = false);
+    void bellman_ford(int source, int end,int** parent_p = nullptr,int** distance_p = nullptr, bool print = false);
 
     void print_dijkstra(int source, int end);
     void printPrim();

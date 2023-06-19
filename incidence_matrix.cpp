@@ -328,21 +328,27 @@ int incidence_matrix::getNumEdges() const {
     return numEdges;
 }
 
-void incidence_matrix::prim() {
+void incidence_matrix::prim(int** parent_p, int** key_p , bool print ) {
     if (numVertices == 0){
         return;
     } else if(numVertices == 1){
         return;
     }
+    int *parent;
+    int* key;
+    if (print){
+        parent = *parent_p;
+        key = *key_p;
+    }else {
+        parent = new int[numVertices];
+        for (int i = 0; i < numVertices; ++i) {
+            parent[i] = -1;
+        }
 
-    int *parent = new int[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        parent[i] = -1;
-    }
-
-    int* key = new int[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        key[i] =INT_MAX;
+        key = new int[numVertices];
+        for (int i = 0; i < numVertices; ++i) {
+            key[i] = INT_MAX;
+        }
     }
     bool* mstSet = new bool[numVertices];
     for (int i = 0; i < numVertices; ++i) {
@@ -381,12 +387,14 @@ void incidence_matrix::prim() {
         }
     }
     delete[] mstSet;
-    delete[] key;
-    delete[] parent;
+    if (!print) {
+        delete[] key;
+        delete[] parent;
+    }
     delete pq;
 }
 
-void incidence_matrix::kruskal() {
+void incidence_matrix::kruskal(kruskal_edge*** mst_p, bool print) {
     if (numVertices == 0){
         return;
     } else if(numVertices == 1){
@@ -428,8 +436,12 @@ void incidence_matrix::kruskal() {
         subsets[v]->parent = v;
         subsets[v]->rank = 0;
     }
-
-    kruskal_edge** mst = new kruskal_edge * [numVertices-1];
+    kruskal_edge** mst;
+    if (print){
+        mst = *mst_p;
+    }else {
+        mst = new kruskal_edge *[numVertices - 1];
+    }
     int edgeCount = 0;
 
     for (int i = 0; i< numEdges;i++) {
@@ -451,11 +463,13 @@ void incidence_matrix::kruskal() {
     }
     delete [] subsets;
     delete[] edges;
-    delete[] mst;
+    if (!print) {
+        delete[] mst;
+    }
 
 }
 
-void incidence_matrix::bellman_ford(int source, int end) {
+void incidence_matrix::bellman_ford(int source, int end,int** parent_p, int** distance_p, bool print) {
     if (source > numVertices-1 || source < 0 || end > numVertices-1 || end < 0){
         return;
     }
@@ -465,14 +479,20 @@ void incidence_matrix::bellman_ford(int source, int end) {
     }else if (numVertices == 1){
         return;
     }
-
-    int* distance = new int[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        distance[i] = INT_MAX;
-    }
-    int* parent = new int[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        parent[i] = -1;
+    int* distance;
+    int* parent;
+    if (print){
+        distance = *distance_p;
+        parent = *parent_p;
+    }else {
+        distance = new int[numVertices];
+        for (int i = 0; i < numVertices; ++i) {
+            distance[i] = INT_MAX;
+        }
+        parent = new int[numVertices];
+        for (int i = 0; i < numVertices; ++i) {
+            parent[i] = -1;
+        }
     }
     int u = 0,v = 0,w;
 
@@ -514,8 +534,10 @@ void incidence_matrix::bellman_ford(int source, int end) {
         }
     }
     delete[] edges;
-    delete[] parent;
-    delete[] distance;
+    if (!print) {
+        delete[] parent;
+        delete[] distance;
+    }
 }
 
 void incidence_matrix::printPrim() {
@@ -536,57 +558,18 @@ void incidence_matrix::printPrim() {
     for (int i = 0; i < numVertices; ++i) {
         key[i] =INT_MAX;
     }
-    bool* mstSet = new bool[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        mstSet[i] = false;
-    }
-
-    primHeap* pq = new primHeap(numVertices);
-    pq->primVertices[0]->key = 0;
-    key[0] = 0;
-
-    while (pq->is_not_empty()) {
-        pq->create_heap();
-        auto elem = pq->pop();
-        int u = elem->vertex;
-
-
-        if (mstSet[u]) continue;
-
-        mstSet[u] = true;
-
-        for (int e = 0; e < numEdges; e++) {
-            int v = -1;
-            if (matrix[e][u] != 0) {
-                for (int i = 0; i < numVertices; i++) {
-                    if (matrix[e][i] == 1 && i != u) {
-                        v = i;
-                        break;
-                    }
-                }
-            }
-
-            if (v != -1 && !mstSet[v] && weights[e] < key[v]) {
-                key[v] = weights[e];
-                parent[v] = u;
-                pq->primVertices[pq->position[v]]->key = weights[e];
-            }
-        }
-    }
-
+    prim(&parent,&key, true);
     std::cout << "Minimum Spanning Tree:\n";
     std::cout << "Edge\tWeight\n";
     for (int i = 1; i < numVertices; i++) {
         int u = parent[i];
         std::cout << u << " - " << i << "\t" << key[i] << std::endl;
     }
-    delete[] mstSet;
     delete[] key;
     delete[] parent;
-    delete pq;
 }
 
-void incidence_matrix::dijkstra(int source, int end) {
+void incidence_matrix::dijkstra(int source, int end,int** parent_p, int** distance_p, bool print) {
     if (source > numVertices-1 || source < 0 || end > numVertices-1 || end < 0){
         return;
     }
@@ -596,15 +579,21 @@ void incidence_matrix::dijkstra(int source, int end) {
     }else if (numVertices == 1){
         return;
     }
+    int *parent;
+    int* dist;
+    if (print){
+        parent = *parent_p;
+        dist = *distance_p;
+    }else {
+        parent = new int[numVertices];
+        for (int i = 0; i < numVertices; ++i) {
+            parent[i] = -1;
+        }
 
-    int *parent = new int[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        parent[i] = -1;
-    }
-
-    int* dist = new int[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        dist[i] =INT_MAX;
+        dist = new int[numVertices];
+        for (int i = 0; i < numVertices; ++i) {
+            dist[i] = INT_MAX;
+        }
     }
     bool* visited = new bool[numVertices];
     for (int i = 0; i < numVertices; ++i) {
@@ -653,8 +642,10 @@ void incidence_matrix::dijkstra(int source, int end) {
             }
         }
     }
-    delete[] dist;
-    delete[] parent;
+    if (!print) {
+        delete[] dist;
+        delete[] parent;
+    }
     delete[] visited;
     delete pq;
 
@@ -682,53 +673,7 @@ void incidence_matrix::printDijkstra(int source, int end) {
     for (int i = 0; i < numVertices; ++i) {
         dist[i] =INT_MAX;
     }
-    bool* visited = new bool[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        visited[i] = false;
-    }
-
-
-    DijkstraHeap* pq = new DijkstraHeap(numVertices);
-
-    dist[source] = 0;
-    pq->dijkstraVertices[source]->distance = dist[source];
-    pq->dijkstraVertices[source]->parent = -1;
-
-    while (pq->is_not_empty()) {
-        pq->create_heap();
-        auto elem = pq->pop_min();
-        int u = elem->index;
-
-        if (visited[u]) {
-            continue;
-        }
-
-        visited[u] = true;
-
-        for (int e = 0; e < numEdges; e++) {
-            if (matrix[e][u] == 1) {
-                int v = -1;
-
-                for (int j = 0; j < numVertices; j++) {
-                    if (matrix[e][j] == -1 ) {
-                        v = j;
-                        break;
-                    }
-                }
-
-                if (v != -1) {
-                    int weight = weights[e];
-
-                    if (!visited[v] && dist[u] != INT_MAX && dist[u] + weight < dist[v]) {
-                        dist[v] = dist[u] + weight;
-                        pq->dijkstraVertices[pq->position[v]]->distance = dist[v];
-                        pq->dijkstraVertices[pq->position[v]]->parent = u;
-                        parent[v] = u;
-                    }
-                }
-            }
-        }
-    }
+    dijkstra(source,end,&parent,&dist,true);
     std::cout << "Shortest path from source to vertex " << end << ":" << std::endl;
     if (dist[end] == INT_MAX) {
         std::cout << "No path exists." << std::endl;
@@ -750,8 +695,6 @@ void incidence_matrix::printDijkstra(int source, int end) {
     }
     delete[] dist;
     delete[] parent;
-    delete[] visited;
-    delete pq;
 }
 
 void incidence_matrix::printKruskal() {
@@ -763,68 +706,14 @@ void incidence_matrix::printKruskal() {
         return;
     }
 
-    int v = 0,u = 0, edge = 0;
-
-    kruskal_edge** edges = new kruskal_edge * [numEdges];
-
-    for (int e = 0; e < numEdges; e++) {
-        v = -1;
-        u = -1;
-        for (int i = 0; i < numVertices; ++i) {
-            if(matrix[e][i]){
-                if (v == -1){
-                    v = i;
-                }else{
-                    u = i;
-                    edges[edge] = new kruskal_edge(v, u, weights[e]);
-                    edge++;
-                    break;
-                }
-            }
-        }
-    }
-
-
-
-    Sort::quickSortEdges(edges,0,numEdges-1);
-
-    Subset** subsets = new Subset * [numVertices];
-
-
-    for (int v = 0; v < numVertices; v++) {
-        subsets[v] = new Subset();
-        subsets[v]->parent = v;
-        subsets[v]->rank = 0;
-    }
 
     kruskal_edge** mst = new kruskal_edge * [numVertices-1];
-
-    int edgeCount = 0;
-
-    for (int i = 0; i< numEdges;i++) {
-        int u = edges[i]->u;
-        int v = edges[i]->v;
-
-        int uParent = findSet(subsets, u);
-        int vParent = findSet(subsets, v);
-
-        if (uParent != vParent) {
-            mst[edgeCount] = edges[i];
-            unionSets(subsets, uParent, vParent);
-            edgeCount++;
-        }
-
-        if (edgeCount == numVertices - 1) {
-            break;
-        }
-    }
+    kruskal(&mst, true);
     std::cout << "Minimum Spanning Tree:\n";
     std::cout << "Edge\tWeight\n";
     for (int i = 0; i<numVertices-1; i++) {
         std::cout << mst[i]->u << " - " << mst[i]->v << " \t " << mst[i]->weight << "\n";
     }
-    delete [] subsets;
-    delete[] edges;
     delete[] mst;
 }
 
@@ -874,46 +763,7 @@ void incidence_matrix::print_bellman_ford(int source, int end) {
     for (int i = 0; i < numVertices; ++i) {
         parent[i] = -1;
     }
-    int u = 0,v = 0,w;
-
-    distance[source] = 0;
-    int edge = 0;
-
-
-    kruskal_edge** edges = new kruskal_edge * [numEdges];
-
-    for (int e = 0; e < numEdges; e++) {
-        v = -1;
-        u = -1;
-        for (int i = 0; i < numVertices; ++i) {
-            if(matrix[e][i] == -1) {
-                v = i;
-            } else if (matrix[e][i] == 1) {
-                u = i;
-            }
-            if (v != -1 && u != -1) {
-                edges[edge] = new kruskal_edge(u, v, weights[e]);
-                edge++;
-                break;
-            }
-
-            }
-        }
-
-
-
-    for (int i = 0; i < numVertices - 1; ++i) {
-        for (int j = 0; j< numEdges;j++) {
-            u = edges[j]->u;
-            v = edges[j]->v;
-            w = weights[j];
-            if (distance[u] != INT_MAX && distance[u] + w < distance[v]) {
-                distance[v] = distance[u] + w;
-                parent[v] = u;
-            }
-        }
-    }
-    delete[] edges;
+    bellman_ford(source,end,&parent,&distance,true);
 
     std::cout << "Shortest path from source to vertex " << end << ":" << std::endl;
     if (distance[end] == INT_MAX) {

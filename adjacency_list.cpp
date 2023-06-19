@@ -146,18 +146,21 @@ void adjacency_list::display_lists() {
 
 }
 
-void adjacency_list::prim() {
+void adjacency_list::prim(int** parent_p,bool print) {
     if (numVertices == 0){
         return;
     } else if(numVertices == 1){
         return;
     }
-
-    int *parent = new int[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        parent[i] = -1;
+    int* parent;
+    if (print){
+        parent = *parent_p;
+    }else {
+        parent = new int[numVertices];
+        for (int i = 0; i < numVertices; ++i) {
+            parent[i] = -1;
+        }
     }
-
     int* key = new int[numVertices];
     for (int i = 0; i < numVertices; ++i) {
         key[i] =INT_MAX;
@@ -191,10 +194,12 @@ void adjacency_list::prim() {
     }
     delete[] key;
     delete[] mstSet;
-    delete[] parent;
+    if (!print) {
+        delete[] parent;
+    }
 }
 
-void adjacency_list::kruskal() {
+void adjacency_list::kruskal(kruskal_edge*** mst_p ,bool print) {
     if (numVertices == 0){
         return;
     } else if(numVertices == 1){
@@ -215,7 +220,7 @@ void adjacency_list::kruskal() {
 
 
 
-    Sort::quickSortEdges(edges,0,numEdges-1);
+    Sort::quickSortEdges(edges,0,(2*numEdges)-1);
 
     Subset** subsets = new Subset * [numVertices];
 
@@ -224,8 +229,12 @@ void adjacency_list::kruskal() {
         subsets[v]->parent = v;
         subsets[v]->rank = 0;
     }
-
-    kruskal_edge** mst = new kruskal_edge * [numVertices-1];
+    kruskal_edge** mst;
+    if (print){
+        mst = *mst_p;
+    }else {
+        mst = new kruskal_edge *[numVertices - 1];
+    }
     int edgeCount = 0;
 
     for (int i = 0; i< numEdges*2;i++) {
@@ -247,10 +256,12 @@ void adjacency_list::kruskal() {
     }
     delete [] subsets;
     delete[] edges;
-    delete[] mst;
+    if (!print) {
+        delete[] mst;
+    }
 }
 
-void adjacency_list::dijkstra(int source, int end) {
+void adjacency_list::dijkstra(int source, int end,int** parent_p, int** distance_p, bool print) {
     if (source > numVertices-1 || source < 0 || end > numVertices-1 || end < 0){
         return;
     }
@@ -260,15 +271,21 @@ void adjacency_list::dijkstra(int source, int end) {
     }else if (numVertices == 1){
         return;
     }
+    int *parent;
+    int* distance;
+    if (print){
+        parent = *parent_p;
+        distance = *distance_p;
+    }else {
+        parent = new int[numVertices];
+        for (int i = 0; i < numVertices; ++i) {
+            parent[i] = -1;
+        }
 
-    int *parent = new int[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        parent[i] = -1;
-    }
-
-    int* distance = new int[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        distance[i] =INT_MAX;
+        distance = new int[numVertices];
+        for (int i = 0; i < numVertices; ++i) {
+            distance[i] = INT_MAX;
+        }
     }
     bool* visited = new bool[numVertices];
     for (int i = 0; i < numVertices; ++i) {
@@ -307,13 +324,15 @@ void adjacency_list::dijkstra(int source, int end) {
             elem = elem->next;
         }
     }
-    delete[] distance;
+    if (!print) {
+        delete[] distance;
+        delete[] parent;
+    }
     delete[] visited;
-    delete[] parent;
     delete pq;
 }
 
-void adjacency_list::bellman_ford(int source, int end) {
+void adjacency_list::bellman_ford(int source, int end,int** parent_p,int** distance_p, bool print) {
     if (source > numVertices-1 || source < 0 || end > numVertices-1 || end < 0){
         return;
     }
@@ -323,16 +342,23 @@ void adjacency_list::bellman_ford(int source, int end) {
     }else if (numVertices == 1){
         return;
     }
+    int* distance;
+    int* parent;
 
-    int* distance = new int[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        distance[i] = INT_MAX;
-    }
-    int* parent = new int[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        parent[i] = -1;
-    }
+    if (print){
+        distance = *distance_p;
+        parent = *parent_p;
+    }else {
 
+        distance = new int[numVertices];
+        for (int i = 0; i < numVertices; ++i) {
+            distance[i] = INT_MAX;
+        }
+        parent = new int[numVertices];
+        for (int i = 0; i < numVertices; ++i) {
+            parent[i] = -1;
+        }
+    }
     distance[source] = 0;
 
     int edge = 0;
@@ -363,8 +389,10 @@ void adjacency_list::bellman_ford(int source, int end) {
         }
     }
     delete[] edges;
-    delete[] distance;
-    delete[] parent;
+    if (!print) {
+        delete[] distance;
+        delete[] parent;
+    }
 }
 
 void adjacency_list::print_dijkstra(int source, int end) {
@@ -390,44 +418,7 @@ void adjacency_list::print_dijkstra(int source, int end) {
     for (int i = 0; i < numVertices; ++i) {
         distance[i] =INT_MAX;
     }
-    bool* visited = new bool[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        visited[i] = false;
-    }
-
-
-    DijkstraHeap* pq = new DijkstraHeap(numVertices);
-
-    distance[source] = 0;
-    pq->dijkstraVertices[source]->distance = distance[source];
-    pq->dijkstraVertices[source]->parent = -1;
-
-    while (pq->is_not_empty()) {
-        pq->create_heap();
-        auto vertex = pq->pop_min();
-        int u = vertex->index;
-
-        if (visited[u]) {
-            continue;
-        }
-
-        visited[u] = true;
-
-        auto elem = adjacency_lists[u]->get_head();
-        while(elem) {
-            int v = elem->value.neighbour;
-            int weight = elem->value.weight;
-
-            if (!visited[v] && distance[u] != INT_MAX && distance[u] + weight < distance[v]) {
-                distance[v] = distance[u] + weight;
-                pq->dijkstraVertices[pq->position[v]]->distance = distance[v];
-                pq->dijkstraVertices[pq->position[v]]->parent = u;
-                parent[v] = u;
-            }
-            elem = elem->next;
-        }
-    }
-
+    dijkstra(source,end,&parent,&distance, true);
     std::cout << "Shortest path from source to vertex " << end << ":" << std::endl;
     if (distance[end] == INT_MAX) {
         std::cout << "No path exists." <<std::endl;
@@ -449,7 +440,6 @@ void adjacency_list::print_dijkstra(int source, int end) {
     }
     delete[] distance;
     delete[] parent;
-    delete[] visited;
 }
 
 void adjacency_list::printPrim() {
@@ -460,43 +450,12 @@ void adjacency_list::printPrim() {
         std::cout << "Minimum Spanning Tree:" << std::endl;
         return;
     }
-
-
-    int *parent = new int[numVertices];
+   int* parent = new int[numVertices];
     for (int i = 0; i < numVertices; ++i) {
         parent[i] = -1;
     }
+    prim(&parent, true);
 
-    int* key = new int[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        key[i] =INT_MAX;
-    }
-    bool* mstSet = new bool[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        mstSet[i] = false;
-    }
-    primHeap* pq = new primHeap(numVertices);
-    pq->primVertices[0]->key = 0;
-    key[0] = 0;
-
-    while (pq->is_not_empty()) {
-        pq->create_heap();
-        auto elem = pq->pop();
-        int u = elem->vertex;
-
-        mstSet[u] = true;
-        auto list = adjacency_lists[u]->get_head();
-        while (list) {
-            int v = list->value.neighbour;
-            int weight = list->value.weight;
-            if (!mstSet[v] && weight < key[v]) {
-                key[v] = weight;
-                parent[v] = u;
-                pq->primVertices[pq->position[v]]->key = weight;
-            }
-            list = list->next;
-        }
-    }
     std::cout << "Minimum Spanning Tree:\n";
     std::cout << "Edge\tWeight\n";
     for (int i = 1; i < numVertices; i++) {
@@ -510,10 +469,9 @@ void adjacency_list::printPrim() {
             elem = elem->next;
         }
     }
-    delete[] mstSet;
-    delete[] key;
+
     delete[] parent;
-    delete pq;
+
 }
 
 void adjacency_list::printKruskal() {
@@ -525,57 +483,16 @@ void adjacency_list::printKruskal() {
         return;
     }
 
-    int edge = 0;
-    kruskal_edge** edges = new kruskal_edge * [numEdges*2];
-    for (int u = 0; u < numVertices; u++) {
-        auto elem = adjacency_lists[u]->get_head();
-        while(elem) {
-            int v = elem->value.neighbour;
-            int weight = elem->value.weight;
-            edges[edge] = new kruskal_edge(v, u, weight);
-            edge++;
-            elem = elem->next;
-        }
-    }
-
-    Sort::quickSortEdges(edges,0,(numEdges*2)-1);
-
-    Subset** subsets = new Subset * [numVertices];
-
-    for (int v = 0; v <numVertices; v++) {
-        subsets[v] = new Subset();
-        subsets[v]->parent = v;
-        subsets[v]->rank = 0;
-    }
 
     kruskal_edge** mst = new kruskal_edge * [numVertices-1];
-    int edgeCount = 0;
+    kruskal(&mst, true);
 
-    for (int i = 0; i< numEdges*2;i++) {
-        int u = edges[i]->u;
-        int v = edges[i]->v;
-
-        int uParent = findSet(subsets, u);
-        int vParent = findSet(subsets, v);
-
-        if (uParent != vParent) {
-            mst[edgeCount] = edges[i];
-            unionSets(subsets, uParent, vParent);
-            edgeCount++;
-        }
-
-        if (edgeCount == numVertices - 1) {
-            break;
-        }
-    }
     std::cout << "Minimum Spanning Tree:\n";
     std::cout << "Edge\tWeight\n";
     for (int i = 0; i<numVertices-1; i++) {
         std::cout << mst[i]->u << " - " << mst[i]->v << " \t " << mst[i]->weight << "\n";
     }
-    delete [] subsets;
     delete[] mst;
-    delete[] edges;
 }
 
 void adjacency_list::unionSets(Subset **subsets, int x, int y) {
@@ -626,37 +543,7 @@ void adjacency_list::print_bellman_ford(int source, int end) {
     for (int i = 0; i < numVertices; ++i) {
         parent[i] = -1;
     }
-
-    distance[source] = 0;
-
-    int edge = 0;
-    kruskal_edge** edges = new kruskal_edge * [numEdges];
-    for (int u = 0; u < numVertices; u++) {
-        auto elem = adjacency_lists[u]->get_head();
-        while(elem) {
-            int v = elem->value.neighbour;
-            int weight = elem->value.weight;
-            edges[edge] = new kruskal_edge(u,v, weight);
-            edge++;
-            elem = elem->next;
-        }
-    }
-
-    int u, v, w;
-    for (int i = 1; i <= numVertices - 1; ++i) {
-        for (int j = 0; j < numEdges; ++j) {
-            u = edges[j]->u;
-            v = edges[j]->v;
-            w = edges[j]->weight;
-
-            if (distance[u] != INT_MAX && distance[u] + w < distance[v]) {
-                distance[v] = distance[u] + w;
-                parent[v] = u;
-            }
-
-        }
-    }
-
+    bellman_ford(source,end,&parent,&distance, true);
     std::cout << "Shortest path from source to vertex " << end << ":" << std::endl;
     if (distance[end] == INT_MAX) {
         std::cout << "No path exists." <<std::endl;

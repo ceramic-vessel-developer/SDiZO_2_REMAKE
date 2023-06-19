@@ -34,10 +34,10 @@ public:
     int* neigbours(int vertex);
     void displayMatrix();
 
-    void prim();
-    void kruskal();
-    void dijkstra(int source, int end);
-    void bellman_ford(int source, int end);
+    void prim(int** parent_p = nullptr, int** key_p = nullptr, bool print = false);
+    void kruskal(kruskal_edge*** mst_p = nullptr, bool print = false);
+    void dijkstra(int source, int end,int** parent_p = nullptr, int** distance_p = nullptr, bool print = false);
+    void bellman_ford(int source, int end,int** parent_p = nullptr, int** distance_p = nullptr, bool print = false);
 
     void printDijkstra(int source, int end);
     void printPrim();
