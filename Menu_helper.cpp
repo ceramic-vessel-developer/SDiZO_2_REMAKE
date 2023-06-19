@@ -77,7 +77,7 @@ void menu_helper::generate_random(int vertices, int density, bool directed) {
         // Ensuring that graph is connected
         for (int i = vertices - 1; i > 0; --i) {
             vertexEnd = rand()%i;
-            weight = rand()+1;
+            weight = rand()%(INT_MAX-1)+1;
             matrix_graph->add_directed_edge(vertexStart,verticesArray[vertexEnd],weight);
             list_graph->add_directed_edge(vertexStart,verticesArray[vertexEnd],weight);
             ++edgeIndex;
@@ -87,7 +87,7 @@ void menu_helper::generate_random(int vertices, int density, bool directed) {
         delete[] verticesArray;
 
         //creating a cycle
-        weight = rand()+1;
+        weight = rand()%(INT_MAX-1)+1;
         matrix_graph->add_directed_edge(vertexStart,0,weight);
         list_graph->add_directed_edge(vertexStart,0,weight);
 
@@ -103,7 +103,7 @@ void menu_helper::generate_random(int vertices, int density, bool directed) {
                 end = rand()%vertices;
                 if (matrix_graph->are_connected(start,end) < 0) break;
             }
-            weight = rand()+1;
+            weight = rand()%(INT_MAX-1)+1;
             matrix_graph->add_directed_edge(start, end, weight);
             list_graph->add_directed_edge(start, end, weight);
 
@@ -128,7 +128,7 @@ void menu_helper::generate_random(int vertices, int density, bool directed) {
         // Ensuring that graph is connected
         for (int i = vertices - 1; i > 0; --i) {
             vertexEnd = rand()%i;
-            weight = rand()+1;
+            weight = rand()%(INT_MAX-1)+1;
             matrix_graph->add_undirected_edge(vertexStart,verticesArray[vertexEnd],weight);
             list_graph->add_undirected_edge(vertexStart,verticesArray[vertexEnd],weight);
             ++edgeIndex;
@@ -148,7 +148,7 @@ void menu_helper::generate_random(int vertices, int density, bool directed) {
                 end = rand()%vertices;
                 if (matrix_graph->are_connected(start,end) < 0) break;
             }
-            weight = rand()+1;
+            weight = rand()%(INT_MAX-1)+1;
             matrix_graph->add_undirected_edge(start, end, weight);
             list_graph->add_undirected_edge(start, end, weight);
         }

@@ -75,7 +75,7 @@ void incidence_matrix::generate_matrix(int vertices){
         for (int i = vertices - 1; i > 0; --i) {
             vertexEnd = rand()%i;
 
-            add_directed_edge(vertexStart,verticesArray[vertexEnd],rand()%1000+1);
+            add_directed_edge(vertexStart,verticesArray[vertexEnd],rand()%(INT_MAX-1)+1);
             ++edgeIndex;
             vertexStart = verticesArray[vertexEnd];
             verticesArray[vertexEnd] = verticesArray[i - 1];
@@ -83,7 +83,7 @@ void incidence_matrix::generate_matrix(int vertices){
         delete[] verticesArray;
 
         //creating a cycle
-        add_directed_edge(vertexStart,0,rand()%1000+1);
+        add_directed_edge(vertexStart,0,rand()%(INT_MAX-1)+1);
 
         //adding the rest of the graph
 
@@ -97,7 +97,7 @@ void incidence_matrix::generate_matrix(int vertices){
                 end = rand()%numVertices;
                 if (are_connected(start,end) < 0) break;
             }
-            add_directed_edge(start, end, rand()%1000+1);
+            add_directed_edge(start, end, rand()%(INT_MAX-1)+1);
         }
 
     }
@@ -118,7 +118,7 @@ void incidence_matrix::generate_matrix(int vertices){
         for (int i = vertices - 1; i > 0; --i) {
             vertexEnd = rand()%i;
 
-            add_undirected_edge(vertexStart,verticesArray[vertexEnd],rand()%1000+1);
+            add_undirected_edge(vertexStart,verticesArray[vertexEnd],rand()%(INT_MAX-1)+1);
             ++edgeIndex;
             vertexStart = verticesArray[vertexEnd];
             verticesArray[vertexEnd] = verticesArray[i - 1];
@@ -136,7 +136,7 @@ void incidence_matrix::generate_matrix(int vertices){
                 end = rand()%numVertices;
                 if (are_connected(start,end) < 0) break;
             }
-            add_undirected_edge(start, end, rand()%1000+1);
+            add_undirected_edge(start, end, rand()%(INT_MAX-1)+1);
         }
 
     }
@@ -189,13 +189,13 @@ incidence_matrix::incidence_matrix(std::string file, bool directed) {
                 while (f >> start) {
                     f >> end;
                     f >> weight;
-                    add_directed_edge(start, end, weight);
+                    add_directed_edge(start, end, weight%(INT_MAX-1)+1);
                 }
             } else {
                 while (f >> start) {
                     f >> end;
                     f >> weight;
-                    add_undirected_edge(start, end, weight);
+                    add_undirected_edge(start, end, weight%(INT_MAX-1)+1);
                 }
             }
         }
@@ -294,31 +294,6 @@ int incidence_matrix::are_connected(int start, int end) {
     return -1;
 }
 
-int *incidence_matrix::neigbours(int vertex) {
-    int* array = new int[numVertices-1];
-    int index = 0;
-    for (int i = 0; i < numVertices-1; ++i) {
-        array[i] = 0;
-    }
-    for (int i = 0; i < numEdges; ++i) {
-        if (matrix[i][vertex]==1){
-            for (int j = 0; j < vertex; ++j) {
-                if (matrix[i][j] != 0){
-                    array[index] = j;
-                    break;
-                }
-            }
-
-            for (int j = vertex+1; j < numVertices; ++j) {
-                if (matrix[i][j] != 0){
-                    array[index] = j;
-                    break;
-                }
-            }
-        }
-    }
-    return array;
-}
 
 int incidence_matrix::getNumVertices() const {
     return numVertices;
@@ -634,8 +609,8 @@ void incidence_matrix::dijkstra(int source, int end,int** parent_p, int** distan
 
                     if (!visited[v] && dist[u] != INT_MAX && dist[u] + weight < dist[v]) {
                         dist[v] = dist[u] + weight;
-                        pq->dijkstraVertices[v]->distance = dist[v];
-                        pq->dijkstraVertices[v]->parent = u;
+                        pq->dijkstraVertices[pq->position[v]]->distance = dist[v];
+                        pq->dijkstraVertices[pq->position[v]]->parent = u;
                         parent[v] = u;
                     }
                 }
@@ -682,7 +657,6 @@ void incidence_matrix::printDijkstra(int source, int end) {
         std::cout << "Path: ";
         double_linked_list_int* path = new double_linked_list_int(0);
         int current = end;
-        int path_length = 0;
         while (current != -1) {
             path->add_back(current);
             current = parent[current];
@@ -738,9 +712,6 @@ void incidence_matrix::unionSets(Subset **subsets, int x, int y) {
     }
 }
 
-bool incidence_matrix::compareEdges(const kruskal_edge &a, const kruskal_edge &b) {
-    return a.weight < b.weight;
-}
 
 void incidence_matrix::print_bellman_ford(int source, int end) {
     if (source > numVertices-1 || source < 0 || end > numVertices-1 || end < 0){

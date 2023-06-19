@@ -77,13 +77,13 @@ adjacency_list::adjacency_list(std::string file, bool directed) {
             while(f >> start){
                 f >> end;
                 f >> weight;
-                add_directed_edge(start, end, weight);
+                add_directed_edge(start, end, weight%(INT_MAX-1)+1);
             }
         }else{
             while(f >> start){
                 f >> end;
                 f >> weight;
-                add_undirected_edge(start, end, weight);
+                add_undirected_edge(start, end, weight%(INT_MAX-1)+1);
             }
         }
 
@@ -131,10 +131,6 @@ int adjacency_list::are_connected(int start, int end) {
     }else{
         return -1;
     }
-}
-
-double_linked_list* adjacency_list::neigbours(int vertex) {
-    return adjacency_lists[vertex];
 }
 
 void adjacency_list::display_lists() {
@@ -517,10 +513,6 @@ int adjacency_list::findSet(Subset **subsets, int i) {
     return subsets[i]->parent;
 }
 
-bool adjacency_list::compareEdges(const kruskal_edge &a, const kruskal_edge &b) {
-    return a.weight < b.weight;
-}
-
 void adjacency_list::print_bellman_ford(int source, int end) {
     if (source > numVertices-1 || source < 0 || end > numVertices-1 || end < 0){
         std::cout << "Nieprawidlowe wiercholki" << std::endl;
@@ -584,7 +576,7 @@ void adjacency_list::generate_graph(int vertices) {
         for (int i = vertices - 1; i > 0; --i) {
             vertexEnd = rand()%i;
 
-            add_directed_edge(vertexStart,verticesArray[vertexEnd],rand()%1000+1);
+            add_directed_edge(vertexStart,verticesArray[vertexEnd],rand()%(INT_MAX-1)+1);
             ++edgeIndex;
             vertexStart = verticesArray[vertexEnd];
             verticesArray[vertexEnd] = verticesArray[i - 1];
@@ -592,7 +584,7 @@ void adjacency_list::generate_graph(int vertices) {
         delete[] verticesArray;
 
         //creating a cycle
-        add_directed_edge(vertexStart,0,rand()%1000+1);
+        add_directed_edge(vertexStart,0,rand()%(INT_MAX-1)+1);
 
         //adding the rest of the graph
 
@@ -606,7 +598,7 @@ void adjacency_list::generate_graph(int vertices) {
                 end = rand()%numVertices;
                 if (are_connected(start,end) < 0) break;
             }
-            add_directed_edge(start, end, rand()%1000+1);
+            add_directed_edge(start, end, rand()%(INT_MAX-1)+1);
         }
 
     }
@@ -627,7 +619,7 @@ void adjacency_list::generate_graph(int vertices) {
         for (int i = vertices - 1; i > 0; --i) {
             vertexEnd = rand()%i;
 
-            add_undirected_edge(vertexStart,verticesArray[vertexEnd],rand()%1000+1);
+            add_undirected_edge(vertexStart,verticesArray[vertexEnd],rand()%(INT_MAX-1)+1);
             ++edgeIndex;
             vertexStart = verticesArray[vertexEnd];
             verticesArray[vertexEnd] = verticesArray[i - 1];
@@ -645,14 +637,10 @@ void adjacency_list::generate_graph(int vertices) {
                 end = rand()%numVertices;
                 if (are_connected(start,end) < 0) break;
             }
-            add_undirected_edge(start, end, rand()%1000+1);
+            add_undirected_edge(start, end, rand()%(INT_MAX-1)+1);
         }
 
     }
-}
-
-int adjacency_list::getNumEdges() const {
-    return numEdges;
 }
 
 void adjacency_list::setNumEdges(int numEdges) {

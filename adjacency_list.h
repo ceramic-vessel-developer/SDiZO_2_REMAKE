@@ -28,13 +28,12 @@ public:
 
     void setNumEdges(int numEdges);
 
-    int getNumEdges() const;
+
 
     ~adjacency_list();
     void add_directed_edge(int start,int end, int weight);
     void add_undirected_edge(int start,int end, int weight);
     int are_connected(int start,int end);
-    double_linked_list* neigbours(int vertex);
     void display_lists();
 
     void prim(int** parent_p = nullptr,bool print = false);
@@ -49,7 +48,6 @@ public:
 
     void unionSets(Subset **subsets, int x, int y);
     int findSet(Subset **subsets, int i);
-    static bool compareEdges(const kruskal_edge& a, const kruskal_edge& b);
 
     void generate_graph(int vertices);
 

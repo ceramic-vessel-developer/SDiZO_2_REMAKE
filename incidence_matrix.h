@@ -31,7 +31,6 @@ public:
     void add_directed_edge(int start,int end, int weight);
     void add_undirected_edge(int start,int end, int weight);
     int are_connected(int start,int end);
-    int* neigbours(int vertex);
     void displayMatrix();
 
     void prim(int** parent_p = nullptr, int** key_p = nullptr, bool print = false);
@@ -46,7 +45,6 @@ public:
 
     int findSet(Subset **subsets, int i);
     void unionSets(Subset **subsets, int x, int y);
-    static bool compareEdges(const kruskal_edge& a, const kruskal_edge& b);
 
     int getNumVertices() const;
 
