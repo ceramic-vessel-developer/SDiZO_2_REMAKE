@@ -205,9 +205,9 @@ void path(){
 }
 
 void research(){
-//    prim();
-//    kruskal();
-//    dijkstra();
+    prim();
+    kruskal();
+    dijkstra();
     bellman();
 }
 
