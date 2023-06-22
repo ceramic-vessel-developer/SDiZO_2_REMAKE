@@ -311,7 +311,7 @@ void adjacency_list::dijkstra(int source, int end,int** parent_p, int** distance
             int v = elem->value.neighbour;
             int weight = elem->value.weight;
 
-            if (!visited[v] && distance[u] != INT_MAX && distance[u] + weight < distance[v]) {
+            if (distance[u] + weight < distance[v]) {
                 distance[v] = distance[u] + weight;
                 pq->dijkstraVertices[pq->position[v]]->distance = distance[v];
                 pq->dijkstraVertices[pq->position[v]]->parent = u;

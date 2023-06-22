@@ -570,10 +570,6 @@ void incidence_matrix::dijkstra(int source, int end,int** parent_p, int** distan
             dist[i] = INT_MAX;
         }
     }
-    bool* visited = new bool[numVertices];
-    for (int i = 0; i < numVertices; ++i) {
-        visited[i] = false;
-    }
 
 
     DijkstraHeap* pq = new DijkstraHeap(numVertices);
@@ -587,11 +583,6 @@ void incidence_matrix::dijkstra(int source, int end,int** parent_p, int** distan
         auto elem = pq->pop_min();
         int u = elem->index;
 
-        if (visited[u]) {
-            continue;
-        }
-
-        visited[u] = true;
 
         for (int e = 0; e < numEdges; e++) {
             if (matrix[e][u] == 1) {
@@ -607,7 +598,7 @@ void incidence_matrix::dijkstra(int source, int end,int** parent_p, int** distan
                 if (v != -1) {
                     int weight = weights[e];
 
-                    if (!visited[v] && dist[u] != INT_MAX && dist[u] + weight < dist[v]) {
+                    if (dist[u] + weight < dist[v]) {
                         dist[v] = dist[u] + weight;
                         pq->dijkstraVertices[pq->position[v]]->distance = dist[v];
                         pq->dijkstraVertices[pq->position[v]]->parent = u;
@@ -621,7 +612,6 @@ void incidence_matrix::dijkstra(int source, int end,int** parent_p, int** distan
         delete[] dist;
         delete[] parent;
     }
-    delete[] visited;
     delete pq;
 
 }
